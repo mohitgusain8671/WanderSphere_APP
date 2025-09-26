@@ -11,11 +11,16 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isDarkMode, toggleTheme, initializeTheme } = useAppStore();
+  const { isDarkMode, isThemeLoading, toggleTheme, initializeTheme } = useAppStore();
 
   useEffect(() => {
     initializeTheme();
   }, []);
+
+  // Don't render children until theme is loaded to prevent blinking
+  if (isThemeLoading) {
+    return null;
+  }
 
   const colors = isDarkMode ? COLORS.dark : COLORS.light;
 

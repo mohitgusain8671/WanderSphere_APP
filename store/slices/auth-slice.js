@@ -16,20 +16,20 @@ export const createAuthSlice = (set, get) => ({
   accessToken: null,
   refreshToken: null,
   isAuthenticated: false,
-  isLoading: false,
+  isAuthLoading: false,
   error: null,
 
   // Actions
   setUser: (user) => set({ user }),
   setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-  setIsLoading: (isLoading) => set({ isLoading }),
+  setIsAuthLoading: (isAuthLoading) => set({ isAuthLoading }),
   setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
 
   // Login Action
   login: async (credentials) => {
-    set({ isLoading: true, error: null });
+    set({ isAuthLoading: true, error: null });
     try {
       const response = await axios.post(
         `${API_BASE_URL}/auth/login`,
@@ -49,26 +49,26 @@ export const createAuthSlice = (set, get) => ({
           accessToken,
           refreshToken,
           isAuthenticated: true,
-          isLoading: false,
+          isAuthLoading: false,
           error: null,
         });
 
         return { success: true, data: user, message: data.message };
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: data.message, isAuthLoading: false });
         return { success: false, error: data.message };
       }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "Login failed";
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isAuthLoading: false });
       return { success: false, error: errorMessage };
     }
   },
 
   // Register Action
   register: async (userData) => {
-    set({ isLoading: true, error: null });
+    set({ isAuthLoading: true, error: null });
     try {
       const response = await axios.post(
         `${API_BASE_URL}/auth/register`,
@@ -77,27 +77,27 @@ export const createAuthSlice = (set, get) => ({
       const data = response.data;
 
       if (data.success) {
-        set({ isLoading: false, error: null });
+        set({ isAuthLoading: false, error: null });
         return { 
           success: true, 
           data: data.data,
           message: data.message 
         };
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: data.message, isAuthLoading: false });
         return { success: false, error: data.message };
       }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "Registration failed";
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isAuthLoading: false });
       return { success: false, error: errorMessage };
     }
   },
 
   // Forgot Password Action
   forgotPassword: async (email) => {
-    set({ isLoading: true, error: null });
+    set({ isAuthLoading: true, error: null });
     try {
       const response = await axios.post(
         `${API_BASE_URL}/auth/forgot-password`,
@@ -106,10 +106,10 @@ export const createAuthSlice = (set, get) => ({
       const data = response.data;
 
       if (data.success) {
-        set({ isLoading: false, error: null });
+        set({ isAuthLoading: false, error: null });
         return { success: true, data: data.data };
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: data.message, isAuthLoading: false });
         return { success: false, error: data.message };
       }
     } catch (error) {
@@ -117,14 +117,14 @@ export const createAuthSlice = (set, get) => ({
         error.response?.data?.message ||
         error.message ||
         "Failed to send reset email";
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isAuthLoading: false });
       return { success: false, error: errorMessage };
     }
   },
 
   // Reset Password Action
   resetPassword: async (resetData) => {
-    set({ isLoading: true, error: null });
+    set({ isAuthLoading: true, error: null });
     try {
       const response = await axios.post(
         `${API_BASE_URL}/auth/reset-password`,
@@ -133,10 +133,10 @@ export const createAuthSlice = (set, get) => ({
       const data = response.data;
 
       if (data.success) {
-        set({ isLoading: false, error: null });
+        set({ isAuthLoading: false, error: null });
         return { success: true, data: data.data };
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: data.message, isAuthLoading: false });
         return { success: false, error: data.message };
       }
     } catch (error) {
@@ -144,7 +144,7 @@ export const createAuthSlice = (set, get) => ({
         error.response?.data?.message ||
         error.message ||
         "Password reset failed";
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isAuthLoading: false });
       return { success: false, error: errorMessage };
     }
   },

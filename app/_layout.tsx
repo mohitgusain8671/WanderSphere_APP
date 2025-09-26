@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, router, Slot } from 'expo-router';
+import { View, ActivityIndicator } from 'react-native';
+import { Stack, router } from 'expo-router';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastProvider, useToast } from '../contexts/ToastContext';
 import { useAppStore } from '../store';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+
 import { setupDeepLinkHandling } from '../utils/deeplink';
 import './global.css';
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, initializeAuth } = useAppStore();
+  const { isAuthenticated, isLoading, isThemeLoading, initializeAuth } = useAppStore();
   const { showSuccess, showError } = useToast();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -29,7 +30,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   }, [isMounted, showSuccess, showError]);
 
   useEffect(() => {
-    if (isMounted && !isLoading) {
+    if (isMounted && !isLoading && !isThemeLoading) {
       // Use setTimeout to ensure navigation happens after component is fully mounted
       setTimeout(() => {
         if (isAuthenticated) {
@@ -39,10 +40,19 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
         }
       }, 100);
     }
-  }, [isAuthenticated, isLoading, isMounted]);
+  }, [isAuthenticated, isLoading, isThemeLoading, isMounted]);
 
-  if (!isMounted || isLoading) {
-    return <LoadingSpinner fullScreen />;
+  if (!isMounted || isLoading || isThemeLoading) {
+    return (
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: '#ffffff' // Use a static color to prevent blinking
+      }}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
   }
 
   return <>{children}</>;
