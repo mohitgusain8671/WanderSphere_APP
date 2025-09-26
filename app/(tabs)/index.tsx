@@ -1,98 +1,250 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAppStore } from '../../store';
+import { Button } from '../../components/ui/Button';
+import { APP_NAME, USER_ROLES } from '../../utils/constants';
+import { capitalize } from '../../utils/helpers';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { colors, isDarkMode, toggleTheme } = useTheme();
+  const { user, logout } = useAppStore();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
+
+  return (
+    <SafeAreaView 
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+    >
+      <ScrollView className="flex-1 px-6">
+        {/* Header */}
+        <View className="flex-row items-center justify-between pt-4 pb-6">
+          <View>
+            <Text 
+              className="text-2xl font-bold"
+              style={{ color: colors.text }}
+            >
+              Welcome to {APP_NAME}
+            </Text>
+            <Text 
+              className="text-base mt-1"
+              style={{ color: colors.textSecondary }}
+            >
+              Hello, {capitalize(user?.firstName || '')}! 👋
+            </Text>
+          </View>
+          
+          <View className="flex-row space-x-2">
+            <TouchableOpacity 
+              onPress={toggleTheme}
+              className="p-2 rounded-full"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <Ionicons 
+                name={isDarkMode ? 'sunny' : 'moon'} 
+                size={24} 
+                color={colors.text}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* User Info Card */}
+        <View 
+          className="p-4 rounded-xl mb-6"
+          style={{ backgroundColor: colors.surface }}
+        >
+          <View className="flex-row items-center mb-4">
+            <View 
+              className="w-16 h-16 rounded-full items-center justify-center mr-4"
+              style={{ backgroundColor: colors.background }}
+            >
+              <Ionicons 
+                name="person" 
+                size={32} 
+                color={isAdmin ? '#F59E0B' : '#3B82F6'} 
+              />
+            </View>
+            <View className="flex-1">
+              <Text 
+                className="text-lg font-semibold"
+                style={{ color: colors.text }}
+              >
+                {capitalize(user?.firstName || '')} {capitalize(user?.lastName || '')}
+              </Text>
+              <Text 
+                className="text-sm"
+                style={{ color: colors.textSecondary }}
+              >
+                {user?.email}
+              </Text>
+              <View className="flex-row items-center mt-1">
+                <View 
+                  className={`px-2 py-1 rounded-full ${isAdmin ? 'bg-amber-100' : 'bg-blue-100'}`}
+                >
+                  <Text 
+                    className={`text-xs font-medium ${isAdmin ? 'text-amber-800' : 'text-blue-800'}`}
+                  >
+                    {isAdmin ? '👑 Admin' : '🌟 User'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Travel Features */}
+        <View className="mb-6">
+          <Text 
+            className="text-xl font-bold mb-4"
+            style={{ color: colors.text }}
+          >
+            Explore Features
+          </Text>
+          
+          <View className="space-y-3">
+            {/* Discover Places */}
+            <TouchableOpacity 
+              className="flex-row items-center p-4 rounded-xl"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <View className="w-12 h-12 rounded-full bg-blue-100 items-center justify-center mr-4">
+                <Ionicons name="location" size={24} color="#3B82F6" />
+              </View>
+              <View className="flex-1">
+                <Text 
+                  className="text-base font-semibold"
+                  style={{ color: colors.text }}
+                >
+                  Discover Places
+                </Text>
+                <Text 
+                  className="text-sm"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Find amazing destinations around the world
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            {/* Travel Stories */}
+            <TouchableOpacity 
+              className="flex-row items-center p-4 rounded-xl"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <View className="w-12 h-12 rounded-full bg-green-100 items-center justify-center mr-4">
+                <Ionicons name="camera" size={24} color="#10B981" />
+              </View>
+              <View className="flex-1">
+                <Text 
+                  className="text-base font-semibold"
+                  style={{ color: colors.text }}
+                >
+                  Travel Stories
+                </Text>
+                <Text 
+                  className="text-sm"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Share your travel experiences
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            {/* Travel Buddies */}
+            <TouchableOpacity 
+              className="flex-row items-center p-4 rounded-xl"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <View className="w-12 h-12 rounded-full bg-purple-100 items-center justify-center mr-4">
+                <Ionicons name="people" size={24} color="#8B5CF6" />
+              </View>
+              <View className="flex-1">
+                <Text 
+                  className="text-base font-semibold"
+                  style={{ color: colors.text }}
+                >
+                  Find Travel Buddies
+                </Text>
+                <Text 
+                  className="text-sm"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Connect with fellow travelers
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            {isAdmin && (
+              <TouchableOpacity 
+                className="flex-row items-center p-4 rounded-xl"
+                style={{ backgroundColor: colors.surface }}
+              >
+                <View className="w-12 h-12 rounded-full bg-amber-100 items-center justify-center mr-4">
+                  <Ionicons name="settings" size={24} color="#F59E0B" />
+                </View>
+                <View className="flex-1">
+                  <Text 
+                    className="text-base font-semibold"
+                    style={{ color: colors.text }}
+                  >
+                    Admin Dashboard
+                  </Text>
+                  <Text 
+                    className="text-sm"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    Manage users and content
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Coming Soon */}
+        <View 
+          className="p-6 rounded-xl mb-6"
+          style={{ backgroundColor: colors.surface }}
+        >
+          <View className="items-center">
+            <Ionicons name="construct" size={48} color="#F59E0B" />
+            <Text 
+              className="text-lg font-bold mt-4 mb-2"
+              style={{ color: colors.text }}
+            >
+              More Features Coming Soon!
+            </Text>
+            <Text 
+              className="text-sm text-center"
+              style={{ color: colors.textSecondary }}
+            >
+              We're working hard to bring you amazing travel features. Stay tuned for updates!
+            </Text>
+          </View>
+        </View>
+
+        {/* Logout Button */}
+        <Button
+          title="Sign Out"
+          onPress={handleLogout}
+          variant="outline"
+          fullWidth
+        />
+
+        <View className="h-8" />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
