@@ -102,6 +102,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <ProfileAvatar 
               size={40} 
               userId={post.author._id}
+              profilePicture={post.author.profilePicture}
               style={{ backgroundColor: colors.background }}
             />
           </View>

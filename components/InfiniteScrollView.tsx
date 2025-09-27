@@ -11,13 +11,15 @@ interface InfiniteScrollViewProps {
   onCommentPress?: (post: any) => void;
   onUserPress?: (userId: string) => void;
   userId?: string; // For user-specific posts
+  headerComponent?: () => React.ReactElement;
 }
 
 export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
   onPostPress,
   onCommentPress,
   onUserPress,
-  userId
+  userId,
+  headerComponent
 }) => {
   const { colors } = useTheme();
   const { 
@@ -161,6 +163,7 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
           tintColor={COLORS.primary}
         />
       }
+      ListHeaderComponent={headerComponent}
       ListEmptyComponent={renderEmptyState}
       ListFooterComponent={
         <View>

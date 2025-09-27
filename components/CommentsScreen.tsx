@@ -97,6 +97,7 @@ export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, onClose 
       <ProfileAvatar 
         size={32} 
         userId={comment.user._id}
+        profilePicture={comment.user.profilePicture}
         style={{ marginRight: 12 }}
       />
       

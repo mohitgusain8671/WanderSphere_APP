@@ -42,6 +42,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
             <ProfileAvatar 
               size={56} 
               userId={storyGroup.author._id}
+              profilePicture={storyGroup.author.profilePicture}
               style={{ backgroundColor: colors.background }}
             />
           </View>

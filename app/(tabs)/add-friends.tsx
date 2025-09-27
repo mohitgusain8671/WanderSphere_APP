@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,10 +7,9 @@ import { Button } from '../../components/ui/Button';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
-import { COLORS } from '../../utils/constants';
 
 export default function AddFriendsScreen() {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const { 
     searchResults, 
     friendRequests, 
@@ -61,6 +61,7 @@ export default function AddFriendsScreen() {
         <ProfileAvatar 
           size={48} 
           userId={user._id}
+          profilePicture={user.profilePicture}
           style={{ backgroundColor: colors.background }}
         />
       </View>
@@ -125,7 +126,7 @@ export default function AddFriendsScreen() {
               backgroundColor: colors.background 
             }}
           >
-            Friends
+            🤝 Travel Buddies
           </Text>
         )}
       </View>
@@ -162,7 +163,7 @@ export default function AddFriendsScreen() {
           className="text-sm"
           style={{ color: colors.textSecondary }}
         >
-          wants to be friends
+          🌍 wants to be travel buddies
         </Text>
       </View>
       
@@ -212,7 +213,7 @@ export default function AddFriendsScreen() {
           className="text-sm"
           style={{ color: colors.textSecondary }}
         >
-          Friend request sent
+          ✈️ Travel buddy request sent
         </Text>
       </View>
       
@@ -231,13 +232,14 @@ export default function AddFriendsScreen() {
   const renderTabButton = (tab: 'search' | 'received' | 'sent', title: string, count?: number) => (
     <TouchableOpacity
       onPress={() => setActiveTab(tab)}
-      className={`flex-1 py-3 items-center rounded-lg ${activeTab === tab ? '' : ''}`}
+      className="flex-1 py-3 items-center rounded-lg"
       style={{ 
-        backgroundColor: activeTab === tab ? COLORS.primary : colors.surface 
+        backgroundColor: activeTab === tab ? '#10B981' : colors.surface,
+        marginHorizontal: 4,
       }}
     >
       <Text 
-        className="font-semibold"
+        className="font-semibold text-sm"
         style={{ 
           color: activeTab === tab ? 'white' : colors.text 
         }}
@@ -252,12 +254,12 @@ export default function AddFriendsScreen() {
     switch (activeTab) {
       case 'search':
         return searchQuery.trim() 
-          ? 'No users found. Try a different search term.'
-          : 'Search for friends by name or email address.';
+          ? '🌍 No fellow travelers found. Try exploring with different keywords!'
+          : '🧭 Discover amazing travel buddies to share your adventures with!';
       case 'received':
-        return 'No friend requests received yet.';
+        return '📬 No adventure invites yet. Share your wanderlust spirit!';
       case 'sent':
-        return 'No friend requests sent yet.';
+        return '📮 No buddy requests sent yet. Start connecting with fellow explorers!';
       default:
         return '';
     }
@@ -295,24 +297,60 @@ export default function AddFriendsScreen() {
       style={{ backgroundColor: colors.background }}
     >
       {/* Header */}
-      <View className="px-4 pt-2 pb-4">
-        <Text 
-          className="text-2xl font-bold mb-4"
-          style={{ color: colors.text }}
-        >
-          Add Friends
-        </Text>
+      <View style={{ 
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 20,
+        backgroundColor: colors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border || (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{
+              width: 4,
+              height: 24,
+              backgroundColor: '#10B981',
+              borderRadius: 2,
+              marginRight: 12,
+            }} />
+            <Text style={{
+              fontSize: 24,
+              fontWeight: '800',
+              color: colors.text,
+              letterSpacing: -0.5,
+            }}>
+              🧭 Travel Buddies
+            </Text>
+          </View>
+          
+          <TouchableOpacity 
+            onPress={() => router.push('/(tabs)/notifications')}
+            style={{
+              backgroundColor: '#10B981',
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+            }}
+          >
+            <Ionicons name="notifications" size={16} color="white" />
+          </TouchableOpacity>
+        </View>
 
         {/* Search Bar (only show in search tab) */}
         {activeTab === 'search' && (
           <View 
             className="flex-row items-center p-3 rounded-xl mb-4"
-            style={{ backgroundColor: colors.surface }}
+            style={{ 
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: '#10B981'
+            }}
           >
-            <Ionicons name="search" size={20} color={colors.textSecondary} />
+            <Ionicons name="search" size={20} color="#10B981" />
             <TextInput
               className="flex-1 ml-3"
-              placeholder="Search by name or email..."
+              placeholder="Find your travel buddy..."
               placeholderTextColor={colors.textSecondary}
               style={{ color: colors.text }}
               value={searchQuery}
@@ -327,10 +365,10 @@ export default function AddFriendsScreen() {
         )}
 
         {/* Tab Buttons */}
-        <View className="flex-row space-x-2">
-          {renderTabButton('search', 'Search')}
-          {renderTabButton('received', 'Received', friendRequests.length)}
-          {renderTabButton('sent', 'Sent', sentRequests.length)}
+        <View className="flex-row">
+          {renderTabButton('search', 'Discover')}
+          {renderTabButton('received', 'Invites', friendRequests.length)}
+          {renderTabButton('sent', 'Requests', sentRequests.length)}
         </View>
       </View>
 
@@ -344,24 +382,41 @@ export default function AddFriendsScreen() {
           ListEmptyComponent={() => (
             <View className="flex-1 items-center justify-center py-20">
               <View 
-                className="w-20 h-20 rounded-full items-center justify-center mb-4"
-                style={{ backgroundColor: colors.surface }}
+                className="w-24 h-24 rounded-full items-center justify-center mb-6 shadow-lg"
+                style={{ 
+                  backgroundColor: '#10B981',
+                  elevation: 8,
+                  shadowColor: '#10B981',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8
+                }}
               >
                 <Ionicons 
                   name={
-                    activeTab === 'search' ? 'search' : 
-                    activeTab === 'received' ? 'person-add' : 'send'
+                    activeTab === 'search' ? 'compass-outline' : 
+                    activeTab === 'received' ? 'mail-outline' : 'paper-plane-outline'
                   } 
-                  size={32} 
-                  color={colors.textSecondary} 
+                  size={36} 
+                  color="white" 
                 />
               </View>
               <Text 
-                className="text-center text-base"
+                className="text-center text-base px-8 leading-6"
                 style={{ color: colors.textSecondary }}
               >
                 {getEmptyStateMessage()}
               </Text>
+              {activeTab === 'search' && !searchQuery.trim() && (
+                <View className="mt-4 px-6">
+                  <Text 
+                    className="text-center text-sm"
+                    style={{ color: '#10B981' }}
+                  >
+                    💡 Tip: Connect with travelers who share your passion for exploration!
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         />

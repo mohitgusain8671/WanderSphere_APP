@@ -215,6 +215,7 @@ export const SinglePostView: React.FC<SinglePostViewProps> = ({
                     <ProfileAvatar 
                       size={48} 
                       userId={post.author._id}
+                      profilePicture={post.author.profilePicture}
                       style={{ backgroundColor: colors.background }}
                     />
                   </View>

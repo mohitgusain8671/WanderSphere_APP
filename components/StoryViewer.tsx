@@ -1,21 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
+import { formatDistanceToNow } from 'date-fns';
 import { ResizeMode, Video } from 'expo-av';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
-  Dimensions,
-  Image,
-  Modal,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    Image,
+    Modal,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { USER_ROLES } from '../utils/constants';
 import { useAppStore } from '../store';
-import { formatDistanceToNow } from 'date-fns';
+import { USER_ROLES } from '../utils/constants';
 import { ProfileAvatar } from './ui/ProfileAvatar';
 
 interface StoryViewerProps {
@@ -212,6 +212,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
           <ProfileAvatar
             size={40}
             userId={currentStory.author._id}
+            profilePicture={currentStory.author.profilePicture}
             style={{ marginRight: 12 }}
           />
           <View className="flex-1">

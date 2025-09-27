@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useAppStore } from '../../store';
+import React, { useEffect, useState } from 'react';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { InfiniteScrollView } from '../../components/InfiniteScrollView';
 import { SinglePostView } from '../../components/SinglePostView';
 import { StoriesBar } from '../../components/StoriesBar';
 import { StoryViewer } from '../../components/StoryViewer';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAppStore } from '../../store';
 
 export default function HomeScreen() {
   const { colors, isDarkMode, toggleTheme } = useTheme();
@@ -58,6 +58,167 @@ export default function HomeScreen() {
     console.log('View user profile:', userId);
   };
 
+  const renderHeader = () => (
+    <View>
+      {/* Header */}
+      <View 
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 12,
+          paddingBottom: 20,
+          backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
+          borderBottomWidth: 1,
+          borderBottomColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+        }}
+      >
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          marginBottom: 16 
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{
+              width: 6,
+              height: 28,
+              backgroundColor: '#10B981',
+              borderRadius: 3,
+              marginRight: 12,
+            }} />
+            <Text 
+              style={{
+                fontSize: 24,
+                fontWeight: '800',
+                color: colors.text,
+                letterSpacing: -0.5,
+              }}
+            >
+              🌍 WanderLands
+            </Text>
+          </View>
+          
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity 
+              onPress={toggleTheme}
+              style={{
+                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                borderRadius: 12,
+                padding: 10,
+              }}
+            >
+              <Ionicons 
+                name={isDarkMode ? 'sunny' : 'moon'} 
+                size={20} 
+                color={colors.text}
+              />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={() => router.push('/(tabs)/notifications')}
+              style={{
+                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                borderRadius: 12,
+                padding: 10,
+              }}
+            >
+              <Ionicons name="notifications-outline" size={20} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Stories Section */}
+      {!refreshingStories && storyGroups.length > 0 && (
+        <View style={{ marginBottom: 16 }}>
+          <View style={{ paddingHorizontal: 20, marginBottom: 12, marginTop: 16 }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '700',
+              color: colors.text,
+            }}>
+              📸 Adventure Stories
+            </Text>
+          </View>
+          <StoriesBar
+            storyGroups={storyGroups}
+            onStoryPress={handleStoryPress}
+            onAddStoryPress={handleAddStoryPress}
+          />
+        </View>
+      )}
+
+      {/* Quick Actions */}
+      <View style={{
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        marginBottom: 20,
+        gap: 12,
+      }}>
+        <TouchableOpacity
+          onPress={handleAddPostPress}
+          style={{
+            flex: 1,
+            backgroundColor: '#10B981',
+            borderRadius: 12,
+            padding: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            elevation: 3,
+            shadowColor: '#10B981',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+        >
+          <Ionicons name="add-circle" size={20} color="white" style={{ marginRight: 8 }} />
+          <Text style={{
+            color: 'white',
+            fontSize: 14,
+            fontWeight: '600',
+          }}>
+            Share Post
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/explore')}
+          style={{
+            flex: 1,
+            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+            borderRadius: 12,
+            padding: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+          }}
+        >
+          <Ionicons name="compass" size={20} color="#10B981" style={{ marginRight: 8 }} />
+          <Text style={{
+            color: '#10B981',
+            fontSize: 14,
+            fontWeight: '600',
+          }}>
+            Explore
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Posts Feed Header */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+        <Text style={{
+          fontSize: 18,
+          fontWeight: '700',
+          color: colors.text,
+        }}>
+          🌟 Travel Feed
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView 
       style={{ 
@@ -65,175 +226,12 @@ export default function HomeScreen() {
         backgroundColor: colors.background 
       }}
     >
-      <ScrollView 
-        style={{ flex: 1 }} 
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View 
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: 20,
-            backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
-            borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
-          }}
-        >
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            marginBottom: 16 
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{
-                width: 6,
-                height: 28,
-                backgroundColor: '#10B981',
-                borderRadius: 3,
-                marginRight: 12,
-              }} />
-              <Text 
-                style={{
-                  fontSize: 24,
-                  fontWeight: '800',
-                  color: colors.text,
-                  letterSpacing: -0.5,
-                }}
-              >
-                🌍 WanderLands
-              </Text>
-            </View>
-            
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <TouchableOpacity 
-                onPress={toggleTheme}
-                style={{
-                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                  borderRadius: 12,
-                  padding: 10,
-                }}
-              >
-                <Ionicons 
-                  name={isDarkMode ? 'sunny' : 'moon'} 
-                  size={20} 
-                  color={colors.text}
-                />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                onPress={() => router.push('/(tabs)/notifications')}
-                style={{
-                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                  borderRadius: 12,
-                  padding: 10,
-                }}
-              >
-                <Ionicons name="notifications-outline" size={20} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Stories Section */}
-        {!refreshingStories && storyGroups.length > 0 && (
-          <View style={{ marginBottom: 16 }}>
-            <View style={{ paddingHorizontal: 20, marginBottom: 12, marginTop: 16 }}>
-              <Text style={{
-                fontSize: 18,
-                fontWeight: '700',
-                color: colors.text,
-              }}>
-                📸 Adventure Stories
-              </Text>
-            </View>
-            <StoriesBar
-              storyGroups={storyGroups}
-              onStoryPress={handleStoryPress}
-              onAddStoryPress={handleAddStoryPress}
-            />
-          </View>
-        )}
-
-        {/* Quick Actions */}
-        <View style={{
-          flexDirection: 'row',
-          paddingHorizontal: 20,
-          marginBottom: 20,
-          gap: 12,
-        }}>
-          <TouchableOpacity
-            onPress={handleAddPostPress}
-            style={{
-              flex: 1,
-              backgroundColor: '#10B981',
-              borderRadius: 12,
-              padding: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              elevation: 3,
-              shadowColor: '#10B981',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-            }}
-          >
-            <Ionicons name="add-circle" size={20} color="white" style={{ marginRight: 8 }} />
-            <Text style={{
-              color: 'white',
-              fontSize: 14,
-              fontWeight: '600',
-            }}>
-              Share Post
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/(tabs)/explore')}
-            style={{
-              flex: 1,
-              backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-              borderRadius: 12,
-              padding: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
-            }}
-          >
-            <Ionicons name="compass" size={20} color="#10B981" style={{ marginRight: 8 }} />
-            <Text style={{
-              color: '#10B981',
-              fontSize: 14,
-              fontWeight: '600',
-            }}>
-              Explore
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Posts Feed */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: '700',
-            color: colors.text,
-          }}>
-            🌟 Travel Feed
-          </Text>
-        </View>
-        
-        <View style={{ flex: 1, minHeight: 400 }}>
-          <InfiniteScrollView
-            onPostPress={handlePostPress}
-            onCommentPress={handleCommentPress}
-            onUserPress={handleUserPress}
-          />
-        </View>
-      </ScrollView>
+      <InfiniteScrollView
+        onPostPress={handlePostPress}
+        onCommentPress={handleCommentPress}
+        onUserPress={handleUserPress}
+        headerComponent={renderHeader}
+      />
 
       {/* Single Post View Modal */}
       <SinglePostView
