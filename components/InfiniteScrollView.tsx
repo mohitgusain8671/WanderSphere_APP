@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, RefreshControl, View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
-import { PostCard } from './PostCard';
 import { COLORS } from '../utils/constants';
+import { PostCard } from './PostCard';
 
 interface InfiniteScrollViewProps {
   onPostPress?: (post: any) => void;
@@ -140,7 +140,6 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
       }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingHorizontal: 16,
         paddingBottom: 20,
         flexGrow: 1
       }}

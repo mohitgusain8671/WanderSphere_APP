@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
+import { ProfileAvatar } from './ui/ProfileAvatar';
 
 interface StoriesBarProps {
   storyGroups: any[];
@@ -38,19 +39,11 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
               backgroundColor: hasUnviewed ? undefined : colors.border,
             }}
           >
-            <View 
-              className="w-full h-full rounded-full items-center justify-center"
+            <ProfileAvatar 
+              size={56} 
+              userId={storyGroup.author._id}
               style={{ backgroundColor: colors.background }}
-            >
-              {storyGroup.author.profilePicture ? (
-                <Image
-                  source={{ uri: storyGroup.author.profilePicture }}
-                  className="w-14 h-14 rounded-full"
-                />
-              ) : (
-                <Ionicons name="person" size={28} color={colors.text} />
-              )}
-            </View>
+            />
           </View>
           
           {/* Add icon for current user */}

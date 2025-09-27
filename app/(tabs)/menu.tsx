@@ -1,11 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAppStore } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
+import { useAppStore } from '../../store';
 import { COLORS } from '../../utils/constants';
 import { capitalize } from '../../utils/helpers';
 
@@ -125,14 +126,11 @@ export default function MenuScreen() {
           style={{ backgroundColor: colors.surface }}
         >
           <View className="flex-row items-center">
-            <View 
-              className="w-16 h-16 rounded-full items-center justify-center mr-4"
-              style={{ backgroundColor: colors.background }}
-            >
-              <Ionicons 
-                name="person" 
-                size={32} 
-                color={COLORS.primary} 
+            <View className="mr-4">
+              <ProfileAvatar 
+                size={64} 
+                style={{ backgroundColor: colors.background }}
+                showDefaultIcon={false}
               />
             </View>
             <View className="flex-1">

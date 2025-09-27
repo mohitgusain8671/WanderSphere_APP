@@ -1,5 +1,5 @@
-import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_HOST
   ? `${process.env.EXPO_PUBLIC_API_HOST}/api`
@@ -21,6 +21,12 @@ export const createAuthSlice = (set, get) => ({
 
   // Actions
   setUser: (user) => set({ user }),
+  updateUserProfile: (profileUpdates) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      set({ user: { ...currentUser, ...profileUpdates } });
+    }
+  },
   setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
   setIsAuthLoading: (isAuthLoading) => set({ isAuthLoading }),

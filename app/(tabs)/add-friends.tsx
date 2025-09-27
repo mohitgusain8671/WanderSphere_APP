@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../components/ui/Button';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
-import { Button } from '../../components/ui/Button';
 import { COLORS } from '../../utils/constants';
 
 export default function AddFriendsScreen() {
@@ -56,18 +57,12 @@ export default function AddFriendsScreen() {
       className="flex-row items-center p-4 mb-2 rounded-xl"
       style={{ backgroundColor: colors.surface }}
     >
-      <View 
-        className="w-12 h-12 rounded-full items-center justify-center mr-3"
-        style={{ backgroundColor: colors.background }}
-      >
-        {user.profilePicture ? (
-          <Image
-            source={{ uri: user.profilePicture }}
-            className="w-12 h-12 rounded-full"
-          />
-        ) : (
-          <Ionicons name="person" size={24} color={colors.text} />
-        )}
+      <View className="mr-3">
+        <ProfileAvatar 
+          size={48} 
+          userId={user._id}
+          style={{ backgroundColor: colors.background }}
+        />
       </View>
       
       <View className="flex-1">

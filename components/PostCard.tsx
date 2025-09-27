@@ -1,18 +1,20 @@
+import { Ionicons } from "@expo/vector-icons";
+import { formatDistanceToNow } from "date-fns";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Dimensions,
+    Alert,
+    Dimensions,
+    Modal,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAppStore } from "../store";
-import { formatDistanceToNow } from "date-fns";
-import { ResizeMode, Video } from "expo-av";
 import { COLORS } from "../utils/constants";
+import { CommentsScreen } from "./CommentsScreen";
+import { ImageCarousel } from "./ui/ImageCarousel";
+import { ProfileAvatar } from "./ui/ProfileAvatar";
 
 interface PostCardProps {
   post: any;
@@ -30,10 +32,11 @@ export const PostCard: React.FC<PostCardProps> = ({
   onCommentPress,
   onUserPress,
 }) => {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const { toggleLikePost, user } = useAppStore();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -75,44 +78,19 @@ export const PostCard: React.FC<PostCardProps> = ({
   const shouldTruncate =
     post.description && post.description.length > MAX_DESCRIPTION_LENGTH;
 
-  const renderMediaItem = (mediaFile: any, index: number) => {
-    if (mediaFile.type === "video") {
-      return (
-        <Video
-          key={index}
-          source={{ uri: mediaFile.url }}
-          style={{
-            width: screenWidth - 32,
-            height: 250,
-            borderRadius: 12,
-            marginRight: index < post.mediaFiles.length - 1 ? 8 : 0,
-          }}
-          resizeMode={ResizeMode.COVER}
-          useNativeControls
-          shouldPlay={false}
-        />
-      );
-    } else {
-      return (
-        <Image
-          key={index}
-          source={{ uri: mediaFile.url }}
-          style={{
-            width: screenWidth - 32,
-            height: 250,
-            borderRadius: 12,
-            marginRight: index < post.mediaFiles.length - 1 ? 8 : 0,
-          }}
-          resizeMode="cover"
-        />
-      );
-    }
-  };
-
   return (
     <View
-      className="mb-4 p-4 rounded-xl"
-      style={{ backgroundColor: colors.surface }}
+      className="mb-4 mx-4 p-4 rounded-xl"
+      style={{ 
+        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(248, 250, 252, 0.8)',
+        borderWidth: 1,
+        borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+        elevation: 2,
+        shadowColor: '#3B82F6',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      }}
     >
       {/* Header */}
       <View className="flex-row items-center justify-between mb-3">
@@ -120,18 +98,12 @@ export const PostCard: React.FC<PostCardProps> = ({
           className="flex-row items-center flex-1"
           onPress={() => onUserPress?.(post.author._id)}
         >
-          <View
-            className="w-10 h-10 rounded-full items-center justify-center mr-3"
-            style={{ backgroundColor: colors.background }}
-          >
-            {post.author.profilePicture ? (
-              <Image
-                source={{ uri: post.author.profilePicture }}
-                className="w-10 h-10 rounded-full"
-              />
-            ) : (
-              <Ionicons name="person" size={20} color={colors.text} />
-            )}
+          <View className="mr-3">
+            <ProfileAvatar 
+              size={40} 
+              userId={post.author._id}
+              style={{ backgroundColor: colors.background }}
+            />
           </View>
           <View className="flex-1">
             <Text
@@ -222,64 +194,95 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       {/* Media */}
       {post.mediaFiles && post.mediaFiles.length > 0 && (
-        <TouchableOpacity onPress={onPress} className="mb-3">
-          <View className="flex-row">
-            {post.mediaFiles.map((mediaFile: any, index: number) =>
-              renderMediaItem(mediaFile, index)
-            )}
-          </View>
-        </TouchableOpacity>
+        <ImageCarousel 
+          mediaFiles={post.mediaFiles}
+          onPress={onPress}
+        />
       )}
 
       {/* Actions */}
-      <View className="flex-row items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-        <View className="flex-row items-center space-x-4">
+      <View 
+        className="flex-row items-center justify-between pt-4 mt-2"
+        style={{ 
+          borderTopWidth: 1, 
+          borderTopColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)'
+        }}
+      >
+        <View className="flex-row items-center">
+          {/* Like Button */}
           <TouchableOpacity
             onPress={handleLike}
-            className="flex-row items-center"
+            className="flex-row items-center py-2 px-3 rounded-xl mr-4"
             disabled={isLiking}
+            style={{
+              backgroundColor: post.isLikedByCurrentUser 
+                ? isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'
+                : isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(248, 250, 252, 0.8)',
+            }}
           >
             <Ionicons
               name={post.isLikedByCurrentUser ? "heart" : "heart-outline"}
-              size={24}
-              color={
-                post.isLikedByCurrentUser ? "#EF4444" : colors.textSecondary
-              }
+              size={20}
+              color={post.isLikedByCurrentUser ? "#EF4444" : colors.textSecondary}
             />
             <Text
-              className="ml-2 text-sm font-medium"
-              style={{ color: colors.textSecondary }}
+              className="ml-2 text-sm font-semibold"
+              style={{ 
+                color: post.isLikedByCurrentUser ? "#EF4444" : colors.textSecondary 
+              }}
             >
-              {post.likesCount}
+              {post.likesCount || 0}
             </Text>
           </TouchableOpacity>
 
+          {/* Comment Button */}
           <TouchableOpacity
-            onPress={onCommentPress}
-            className="flex-row items-center"
+            onPress={() => setShowComments(true)}
+            className="flex-row items-center py-2 px-3 rounded-xl mr-4"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(248, 250, 252, 0.8)',
+            }}
           >
             <Ionicons
               name="chatbubble-outline"
-              size={22}
-              color={colors.textSecondary}
+              size={18}
+              color="#3B82F6"
             />
             <Text
-              className="ml-2 text-sm font-medium"
-              style={{ color: colors.textSecondary }}
+              className="ml-2 text-sm font-semibold"
+              style={{ color: "#3B82F6" }}
             >
-              {post.commentsCount}
+              {post.commentsCount || 0}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity className="p-2">
+        {/* Share Button */}
+        <TouchableOpacity 
+          className="py-2 px-3 rounded-xl"
+          style={{
+            backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(248, 250, 252, 0.8)',
+          }}
+        >
           <Ionicons
             name="share-outline"
-            size={22}
+            size={20}
             color={colors.textSecondary}
           />
         </TouchableOpacity>
       </View>
+
+      {/* Comments Modal */}
+      <Modal
+        visible={showComments}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <CommentsScreen
+          postId={post._id}
+          onClose={() => setShowComments(false)}
+        />
+      </Modal>
     </View>
   );
 };

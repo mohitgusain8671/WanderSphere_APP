@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { InfiniteScrollView } from '../../components/InfiniteScrollView';
+import { StoriesBar } from '../../components/StoriesBar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 import { APP_NAME } from '../../utils/constants';
-import { StoriesBar } from '../../components/StoriesBar';
-import { InfiniteScrollView } from '../../components/InfiniteScrollView';
 
 export default function HomeScreen() {
   const { colors, isDarkMode, toggleTheme } = useTheme();
@@ -31,8 +32,11 @@ export default function HomeScreen() {
   };
 
   const handleAddStoryPress = () => {
-    // TODO: Navigate to add story screen
-    console.log('Add new story');
+    router.push('/(tabs)/add-story');
+  };
+
+  const handleAddPostPress = () => {
+    router.push('/(tabs)/add-post');
   };
 
   const handlePostPress = (post: any) => {
@@ -43,6 +47,7 @@ export default function HomeScreen() {
   const handleCommentPress = (post: any) => {
     // TODO: Navigate to comments screen
     console.log('View comments for post:', post._id);
+    Alert.alert('Comments', `Viewing comments for ${post.author.firstName}'s post`);
   };
 
   const handleUserPress = (userId: string) => {
@@ -105,6 +110,8 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+
+
     </SafeAreaView>
   );
 }
