@@ -5,6 +5,8 @@ import { createPostsSlice } from "./slices/posts-slice";
 import { createStoriesSlice } from "./slices/stories-slice";
 import { createFriendsSlice } from "./slices/friends-slice";
 import { createNotificationsSlice } from "./slices/notifications-slice";
+import { createWanderlustSlice } from "./slices/wanderlust-slice";
+import { createItinerarySlice } from "./slices/itinerary-slice";
 
 export const useAppStore = create()((...a) => ({
   ...createAuthSlice(...a),
@@ -13,4 +15,6 @@ export const useAppStore = create()((...a) => ({
   ...createStoriesSlice(...a),
   ...createFriendsSlice(...a),
   ...createNotificationsSlice(...a),
+  ...createWanderlustSlice(...a),
+  ...createItinerarySlice(...a),
 }));

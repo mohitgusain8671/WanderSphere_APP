@@ -72,6 +72,28 @@ export const USER_ROUTES = {
     SEARCH_USERS: `${API_BASE_URL}/users/search/users`
 };
 
+// Wanderlust Routes
+export const WANDERLUST_ROUTES = {
+    BASE: `${API_BASE_URL}/wanderlust`,
+    GET_DESTINATIONS: `${API_BASE_URL}/wanderlust/destinations`,
+    GET_TIP: `${API_BASE_URL}/wanderlust/tip`,
+    GET_ALL_DESTINATIONS: `${API_BASE_URL}/wanderlust/destinations/all`,
+    GET_ALL_TIPS: `${API_BASE_URL}/wanderlust/tips/all`,
+    REGENERATE_CONTENT: `${API_BASE_URL}/wanderlust/regenerate`
+};
+
+// Itinerary Routes
+export const ITINERARY_ROUTES = {
+    BASE: `${API_BASE_URL}/itinerary`,
+    GENERATE: `${API_BASE_URL}/itinerary/generate`,
+    GET_USER_ITINERARIES: `${API_BASE_URL}/itinerary`,
+    GET_ITINERARY: (id: string) => `${API_BASE_URL}/itinerary/${id}`,
+    UPDATE_RATING: (id: string) => `${API_BASE_URL}/itinerary/${id}/rating`,
+    UPDATE_NOTES: (id: string) => `${API_BASE_URL}/itinerary/${id}/notes`,
+    DELETE_ITINERARY: (id: string) => `${API_BASE_URL}/itinerary/${id}`,
+    POPULAR_DESTINATIONS: `${API_BASE_URL}/itinerary/popular-destinations`
+};
+
 // App Configuration
 export const APP_NAME = 'WanderSphere';
 

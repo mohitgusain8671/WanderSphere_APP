@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAppStore } from '../store';
 import { TRAVEL_TIPS } from '../utils/constants';
 
 interface TravelWisdomProps {
@@ -10,9 +11,12 @@ interface TravelWisdomProps {
 
 export const TravelWisdom: React.FC<TravelWisdomProps> = ({ customTip }) => {
   const { colors, isDarkMode } = useTheme();
+  const { adventureTip } = useAppStore();
   
-  // Use custom tip or get a random one from constants
-  const selectedTip = customTip || TRAVEL_TIPS[Math.floor(Math.random() * TRAVEL_TIPS.length)];
+  // Use custom tip or AI-generated tip or fallback to random tip from constants
+  const selectedTip = customTip || 
+    (adventureTip ? { tip: adventureTip.tip, author: 'AI Travel Guide' } : null) ||
+    TRAVEL_TIPS[Math.floor(Math.random() * TRAVEL_TIPS.length)];
 
   return (
     <View style={{ 
