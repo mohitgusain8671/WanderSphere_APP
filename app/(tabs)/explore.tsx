@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useAppStore } from '../../store/index';
-import { WelcomeMessage } from '../../components/WelcomeMessage';
-import { WanderLustCard } from '../../components/WanderLustCard';
-import { TravelWisdom } from '../../components/TravelWisdom';
-import Sidebar from '@/components/Sidebar';
+import ItineraryDisplay from '@/components/ItineraryDisplay';
 import ItineraryForm from '@/components/ItineraryForm';
 import ItineraryList from '@/components/ItineraryList';
-import ItineraryDisplay from '@/components/ItineraryDisplay';
+import Sidebar from '@/components/Sidebar';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { TravelWisdom } from '../../components/TravelWisdom';
+import { WanderLustCard } from '../../components/WanderLustCard';
+import { WelcomeMessage } from '../../components/WelcomeMessage';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useAppStore } from '../../store/index';
 
 export default function ExploreScreen() {
   const { colors, isDarkMode, toggleTheme } = useTheme();

@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface WanderLustDestination {
@@ -61,127 +61,150 @@ export const WanderLustCard: React.FC<WanderLustCardProps> = ({
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 4 }}
       >
         {destinations.map((item, index) => (
           <TouchableOpacity
             key={index}
             onPress={() => onDestinationPress(item)}
             style={{
-              width: 300,
-              borderRadius: 20,
+              width: 280,
+              borderRadius: 16,
               overflow: 'hidden',
-              marginRight: 20,
+              marginRight: 16,
               backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
-              elevation: 6,
+              elevation: 4,
               shadowColor: '#10B981',
-              shadowOffset: { width: 0, height: 3 },
-              shadowOpacity: 0.15,
-              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
               borderWidth: 1,
               borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             }}
           >
-            {/* Header with emoji and destination */}
+            {/* Compact Header */}
             <View style={{
               backgroundColor: '#10B981',
-              padding: 16,
+              padding: 12,
               flexDirection: 'row',
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: 24, marginRight: 12 }}>{item.emoji}</Text>
+              <Text style={{ fontSize: 28, marginRight: 12 }}>{item.emoji}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{
                   color: 'white',
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: '700',
-                  marginBottom: 4,
+                  marginBottom: 2,
                 }}>
                   {item.destination}
                 </Text>
                 <Text style={{
                   color: 'rgba(255, 255, 255, 0.9)',
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: '500',
                 }}>
                   {item.type}
                 </Text>
               </View>
+              <View style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 12,
+                padding: 6,
+              }}>
+                <Ionicons name="chevron-forward" size={16} color="white" />
+              </View>
             </View>
 
-            {/* Content */}
-            <View style={{ padding: 16 }}>
+            {/* Compact Content */}
+            <View style={{ padding: 12 }}>
+              {/* Truncated Description */}
               <Text style={{
-                fontSize: 14,
+                fontSize: 13,
                 color: colors.text,
-                fontWeight: '600',
-                marginBottom: 12,
-                lineHeight: 20,
-              }}>
+                fontWeight: '500',
+                marginBottom: 8,
+                lineHeight: 18,
+              }} numberOfLines={2}>
                 {item.description}
               </Text>
 
-              {/* Best time to visit */}
+              {/* Best Time Info */}
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 marginBottom: 8,
               }}>
-                <Ionicons name="calendar-outline" size={14} color="#10B981" />
+                <Ionicons name="calendar-outline" size={12} color="#10B981" />
                 <Text style={{
-                  fontSize: 12,
+                  fontSize: 11,
                   color: '#10B981',
                   fontWeight: '600',
-                  marginLeft: 6,
+                  marginLeft: 4,
                 }}>
-                  Best time: {item.bestTime}
+                  {item.bestTime}
                 </Text>
               </View>
 
-              {/* Top highlights */}
+              {/* Single Highlight */}
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginBottom: 12,
+                marginBottom: 8,
               }}>
-                <Ionicons name="star-outline" size={14} color="#10B981" />
+                <Ionicons name="star" size={12} color="#FFA500" />
                 <Text style={{
-                  fontSize: 12,
-                  color: colors.text,
+                  fontSize: 11,
+                  color: colors.textSecondary,
                   fontWeight: '500',
-                  marginLeft: 6,
+                  marginLeft: 4,
                   flex: 1,
-                }}>
-                  Must see: {item.highlights.slice(0, 2).join(', ')}
+                }} numberOfLines={1}>
+                  {item.highlights[0]}
                 </Text>
               </View>
 
-              {/* Activities preview */}
+              {/* Activities Badge */}
               <View style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: 6,
+                alignSelf: 'flex-start',
               }}>
-                {item.activities.slice(0, 3).map((activity, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                    }}
-                  >
-                    <Text style={{
-                      fontSize: 11,
-                      color: '#10B981',
-                      fontWeight: '500',
-                    }}>
-                      {activity}
-                    </Text>
-                  </View>
-                ))}
+                <View style={{
+                  backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+                }}>
+                  <Text style={{
+                    fontSize: 10,
+                    color: '#10B981',
+                    fontWeight: '700',
+                  }}>
+                    {item.activities.length}+ Activities
+                  </Text>
+                </View>
               </View>
+            </View>
+
+            {/* Tap to Explore Footer */}
+            <View style={{
+              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{
+                fontSize: 11,
+                color: '#10B981',
+                fontWeight: '600',
+                marginRight: 4,
+              }}>
+                Tap to explore
+              </Text>
+              <Ionicons name="arrow-forward" size={12} color="#10B981" />
             </View>
           </TouchableOpacity>
         ))}
