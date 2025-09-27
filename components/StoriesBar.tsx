@@ -20,7 +20,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
   const { user } = useAppStore();
 
   const renderStoryItem = (storyGroup: any, index: number) => {
-    const isCurrentUser = storyGroup.author._id === user?.id;
+    const isCurrentUser = storyGroup.author._id === user?._id;
     const hasUnviewed = storyGroup.hasUnviewed;
 
     return (
@@ -70,7 +70,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
   };
 
   // Add current user's story group if not already present
-  const userStoryGroup = storyGroups.find(group => group.author._id === user?.id);
+  const userStoryGroup = storyGroups.find(group => group.author._id === user?._id);
   const hasUserStories = !!userStoryGroup;
 
   return (

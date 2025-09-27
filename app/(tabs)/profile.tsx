@@ -23,6 +23,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 import { USER_ROLES } from '../../utils/constants';
 import { capitalize } from '../../utils/helpers';
+import { SinglePostView } from '../../components/SinglePostView';
+import { StoryViewer } from '../../components/StoryViewer';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -31,15 +33,18 @@ export default function UniqueProfileScreen() {
   const { 
     user, 
     updateUserProfile,
+    uploadProfilePicture,
     logout,
-    posts,
+    userPosts,
     friends,
     friendRequests,
     sentRequests,
     storyGroups,
-    getPosts,
+    myStories,
+    getUserPosts,
     getFriends,
-    getStories
+    getStories,
+    getMyStories
   } = useAppStore();
 
   const [showSettings, setShowSettings] = useState(false);
@@ -48,6 +53,10 @@ export default function UniqueProfileScreen() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showActionDrawer, setShowActionDrawer] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('All Countries');
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
   const scrollY = new Animated.Value(0);
   const drawerAnimation = new Animated.Value(0);
 
@@ -253,16 +262,51 @@ export default function UniqueProfileScreen() {
     setShowShareModal(true);
   };
 
-  // Real data
-  const userPosts = posts.filter((post: any) => post.author._id === user?._id);
+  // Post and story click handlers
+  const handlePostPress = (post: any) => {
+    setSelectedPost(post);
+    setShowPostModal(true);
+  };
+
+  const handleStoryPress = (storyIndex: number) => {
+    // Create a story group with current user's stories for the viewer
+    const userStoryGroups = [{
+      author: user,
+      stories: myStories,
+      hasUnviewed: false
+    }];
+    
+    setSelectedStoryGroupIndex(0); // Only one group (current user's stories)
+    setShowStoryViewer(true);
+  };
+
+  const handleUserPress = (userId: string) => {
+    // Navigate to user profile or handle as needed
+    console.log('Navigate to user:', userId);
+  };
+
+  // Load user's own posts and stories
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user?._id) {
+        await getUserPosts(user._id, 1);
+        await getMyStories();
+        await getFriends();
+      }
+    };
+    loadUserData();
+  }, [user?._id]);
+
+  // Real data - use userPosts from store
+  const currentUserPosts = userPosts;
   
   // Filter posts by selected country
   const filteredPosts = selectedCountry === 'All Countries' 
-    ? userPosts 
-    : userPosts.filter((post: any) => post.location?.country === selectedCountry);
+    ? currentUserPosts 
+    : currentUserPosts.filter((post: any) => post.location?.country === selectedCountry);
 
   // Get unique countries from user's posts
-  const uniqueCountries = userPosts
+  const uniqueCountries = currentUserPosts
     .filter((post: any) => post.location?.country)
     .map((post: any) => post.location.country)
     .filter((country: any, index: number, array: any[]) => array.indexOf(country) === index);
@@ -277,24 +321,15 @@ export default function UniqueProfileScreen() {
 
   const transformedPosts = filteredPosts.map((post: any) => ({
     id: post._id,
-    type: post.images?.length > 1 ? 'carousel' : post.video ? 'video' : 'photo' as const,
+    type: post.mediaFiles?.length > 1 ? 'carousel' : 
+         post.mediaFiles?.[0]?.type === 'video' ? 'video' : 'photo' as const,
     likesCount: post.likesCount || 0,
     commentsCount: post.commentsCount || 0,
-    thumbnail: post.images?.[0] || post.video || null,
-    content: post.content,
+    thumbnail: post.mediaFiles?.[0]?.url || null,
+    content: post.description,
     location: post.location
   }));
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (user?._id) {
-        await getPosts(1, user._id);
-        await getFriends();
-        await getStories();
-      }
-    };
-    loadUserData();
-  }, [user?._id]);
 
   const StatCard = ({ title, value, icon, color }: any) => (
     <TouchableOpacity
@@ -397,7 +432,7 @@ export default function UniqueProfileScreen() {
               fontSize: 14,
               fontWeight: selectedCountry === country ? '600' : '400'
             }}>
-              {country} {country !== 'All Countries' && `(${userPosts.filter((p: any) => p.location?.country === country).length})`}
+              {country} {country !== 'All Countries' && `(${currentUserPosts.filter((p: any) => p.location?.country === country).length})`}
             </Text>
           </TouchableOpacity>
         ))}
@@ -510,7 +545,13 @@ export default function UniqueProfileScreen() {
           return (
             <TouchableOpacity
               key={post.id}
-              onPress={() => console.log('Post pressed:', post.id)}
+              onPress={() => {
+                // Find the original post from userPosts
+                const originalPost = currentUserPosts.find((p: any) => p._id === post.id);
+                if (originalPost) {
+                  handlePostPress(originalPost);
+                }
+              }}
               style={{
                 width: itemWidth,
                 height: itemWidth * 1.25,
@@ -1162,8 +1203,153 @@ export default function UniqueProfileScreen() {
           </View>
         </View>
 
-        {/* Posts Grid */}
-        <PostGrid posts={transformedPosts} />
+        {/* Content based on selected tab */}
+        {selectedTab === 'posts' && <PostGrid posts={transformedPosts} />}
+        
+        {selectedTab === 'stories' && (
+          <View style={{ paddingHorizontal: 16 }}>
+            {myStories.length === 0 ? (
+              <View style={{
+                alignItems: 'center',
+                paddingVertical: 80,
+                backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.4)' : 'rgba(248, 250, 252, 0.6)',
+                borderRadius: 24,
+                marginHorizontal: 4,
+                borderWidth: 1,
+                borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+              }}>
+                <View style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: 60,
+                  backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.08)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 24,
+                  borderWidth: 3,
+                  borderStyle: 'dashed',
+                  borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.4)' : 'rgba(245, 158, 11, 0.3)',
+                }}>
+                  <Ionicons name="play-circle" size={48} color="#F59E0B" />
+                </View>
+                <Text style={{
+                  fontSize: 26,
+                  fontWeight: '900',
+                  color: colors.text,
+                  marginBottom: 12,
+                  letterSpacing: -0.5,
+                }}>
+                  Share Your Stories
+                </Text>
+                <Text style={{
+                  fontSize: 16,
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  marginBottom: 32,
+                  lineHeight: 24,
+                  paddingHorizontal: 20,
+                }}>
+                  Create quick stories to share{'\n'}your travel moments with friends
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)/add-story')}
+                  style={{
+                    backgroundColor: '#F59E0B',
+                    paddingHorizontal: 40,
+                    paddingVertical: 18,
+                    borderRadius: 28,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    elevation: 8,
+                    shadowColor: '#F59E0B',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 12,
+                  }}
+                >
+                  <Ionicons name="add" size={22} color="white" style={{ marginRight: 10 }} />
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 17,
+                    fontWeight: '800',
+                    letterSpacing: 0.5,
+                  }}>
+                    Create Story
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}>
+                {myStories.map((story: any, index: number) => {
+                  const itemWidth = (SCREEN_WIDTH - 56) / 2;
+                  return (
+                    <TouchableOpacity
+                      key={story._id}
+                      onPress={() => handleStoryPress(index)}
+                      style={{
+                        width: itemWidth,
+                        height: itemWidth * 1.5,
+                        borderRadius: 20,
+                        overflow: 'hidden',
+                        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.95)',
+                        marginBottom: 16,
+                        borderWidth: 1,
+                        borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.08)',
+                      }}
+                    >
+                      {/* Story thumbnail/preview would go here */}
+                      <View style={{
+                        flex: 1,
+                        backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.05)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <Ionicons name="play-circle" size={32} color="#F59E0B" />
+                        <Text style={{
+                          color: colors.textSecondary,
+                          fontSize: 12,
+                          marginTop: 8,
+                        }}>
+                          Story {index + 1}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        )}
+        
+        {selectedTab === 'saved' && (
+          <View style={{
+            alignItems: 'center',
+            paddingVertical: 80,
+            paddingHorizontal: 20,
+          }}>
+            <Ionicons name="bookmark-outline" size={48} color={colors.textSecondary} />
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginTop: 16,
+              marginBottom: 8,
+            }}>
+              Saved Posts
+            </Text>
+            <Text style={{
+              fontSize: 14,
+              color: colors.textSecondary,
+              textAlign: 'center',
+            }}>
+              Your saved travel inspiration will appear here
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Settings Modal */}
@@ -1609,16 +1795,34 @@ export default function UniqueProfileScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => {
-                    // Save profile updates to user store
-                    updateUserProfile({
-                      profilePicture: profileData.profilePicture,
-                      travelStatus: profileData.travelStatus,
-                      statusColor: profileData.statusColor,
-                      badges: profileData.badges,
-                      bio: profileData.bio
-                    });
-                    setShowEditProfile(false);
+                  onPress={async () => {
+                    try {
+                      // Handle profile picture upload if changed
+                      if (profileData.profilePicture && !profileData.profilePicture.startsWith('http')) {
+                        const uploadResult = await uploadProfilePicture(profileData.profilePicture);
+                        if (!uploadResult.success) {
+                          Alert.alert('Error', uploadResult.error || 'Failed to upload profile picture');
+                          return;
+                        }
+                      }
+                      
+                      // Update profile data (excluding profile picture as it's handled above)
+                      const result = await updateUserProfile({
+                        travelStatus: profileData.travelStatus,
+                        statusColor: profileData.statusColor,
+                        badges: profileData.badges,
+                        bio: profileData.bio
+                      });
+                      
+                      if (result.success) {
+                        Alert.alert('Success', 'Profile updated successfully!');
+                        setShowEditProfile(false);
+                      } else {
+                        Alert.alert('Error', result.error || 'Failed to update profile');
+                      }
+                    } catch (error) {
+                      Alert.alert('Error', 'Failed to update profile');
+                    }
                   }}
                   style={{
                     flex: 1,
@@ -2375,6 +2579,32 @@ export default function UniqueProfileScreen() {
             </ScrollView>
           </BlurView>
         </View>
+      )}
+
+      {/* Single Post View Modal */}
+      <SinglePostView
+        post={selectedPost}
+        visible={showPostModal}
+        onClose={() => {
+          setShowPostModal(false);
+          setSelectedPost(null);
+        }}
+        onUserPress={handleUserPress}
+      />
+
+      {/* Story Viewer */}
+      {myStories.length > 0 && (
+        <StoryViewer
+          visible={showStoryViewer}
+          storyGroups={[{
+            author: user,
+            stories: myStories,
+            hasUnviewed: false
+          }]}
+          initialGroupIndex={0}
+          onClose={() => setShowStoryViewer(false)}
+          onUserPress={handleUserPress}
+        />
       )}
     </SafeAreaView>
   );

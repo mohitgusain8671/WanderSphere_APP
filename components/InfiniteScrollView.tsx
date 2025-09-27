@@ -20,23 +20,53 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
   userId
 }) => {
   const { colors } = useTheme();
-  const { posts, hasMore, isPostsLoading, getPosts, loadMorePosts } = useAppStore();
+  const { 
+    posts, 
+    userPosts, 
+    hasMore, 
+    userHasMore, 
+    isPostsLoading, 
+    isUserPostsLoading,
+    getPosts, 
+    getUserPosts,
+    loadMorePosts,
+    loadMoreUserPosts 
+  } = useAppStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  // Use appropriate posts and loading state based on whether we're showing user posts
+  const currentPosts = userId ? userPosts : posts;
+  const currentHasMore = userId ? userHasMore : hasMore;
+  const currentIsLoading = userId ? isUserPostsLoading : isPostsLoading;
 
   useEffect(() => {
     // Load initial posts
-    getPosts(1, userId);
+    if (userId) {
+      getUserPosts(userId, 1);
+    } else {
+      getPosts(1);
+    }
   }, [userId]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await getPosts(1, userId);
+    if (userId) {
+      await getUserPosts(userId, 1);
+    } else {
+      await getPosts(1);
+    }
     setRefreshing(false);
   };
 
   const handleLoadMore = async () => {
-    if (hasMore && !isPostsLoading) {
-      await loadMorePosts(userId);
+    if (userId) {
+      if (userHasMore && !isUserPostsLoading) {
+        await loadMoreUserPosts(userId);
+      }
+    } else {
+      if (hasMore && !isPostsLoading) {
+        await loadMorePosts();
+      }
     }
   };
 
@@ -50,7 +80,7 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
   );
 
   const renderLoadingIndicator = () => {
-    if (!isPostsLoading) return null;
+    if (!currentIsLoading) return null;
     
     return (
       <View className="py-4 items-center">
@@ -60,7 +90,7 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
   };
 
   const renderEmptyState = () => {
-    if (isPostsLoading) return null;
+    if (currentIsLoading) return null;
     
     return (
       <View className="flex-1 items-center justify-center py-20">
@@ -90,7 +120,7 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
   };
 
   const renderEndMessage = () => {
-    if (hasMore || posts.length === 0) return null;
+    if (currentHasMore || currentPosts.length === 0) return null;
     
     return (
       <View className="py-8 items-center">
@@ -118,7 +148,7 @@ export const InfiniteScrollView: React.FC<InfiniteScrollViewProps> = ({
 
   return (
     <FlatList
-      data={posts}
+      data={currentPosts}
       renderItem={renderPost}
       keyExtractor={(item) => item._id}
       onEndReached={handleLoadMore}

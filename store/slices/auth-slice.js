@@ -21,10 +21,80 @@ export const createAuthSlice = (set, get) => ({
 
   // Actions
   setUser: (user) => set({ user }),
-  updateUserProfile: (profileUpdates) => {
-    const currentUser = get().user;
-    if (currentUser) {
-      set({ user: { ...currentUser, ...profileUpdates } });
+  updateUserProfile: async (profileUpdates) => {
+    set({ isAuthLoading: true, error: null });
+    try {
+      const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+      
+      const response = await axios.put(`${API_BASE_URL}/users/profile`, profileUpdates, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = response.data;
+      
+      if (data.success) {
+        // Update the user in store with new profile data
+        set({ 
+          user: data.data.user,
+          isAuthLoading: false, 
+          error: null 
+        });
+        
+        return { success: true, data: data.data.user, message: data.message };
+      } else {
+        set({ error: data.message, isAuthLoading: false });
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Profile update failed';
+      set({ error: errorMessage, isAuthLoading: false });
+      return { success: false, error: errorMessage };
+    }
+  },
+  
+  // Upload profile picture
+  uploadProfilePicture: async (imageUri) => {
+    set({ isAuthLoading: true, error: null });
+    try {
+      const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+      
+      const formData = new FormData();
+      formData.append('profilePicture', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'profile.jpg'
+      });
+      
+      const response = await axios.post(`${API_BASE_URL}/users/profile/picture`, formData, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      const data = response.data;
+      
+      if (data.success) {
+        // Update the user in store with new profile picture
+        const currentUser = get().user;
+        set({ 
+          user: { ...currentUser, profilePicture: data.data.profilePicture },
+          isAuthLoading: false, 
+          error: null 
+        });
+        
+        return { success: true, data: data.data, message: data.message };
+      } else {
+        set({ error: data.message, isAuthLoading: false });
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Profile picture upload failed';
+      set({ error: errorMessage, isAuthLoading: false });
+      return { success: false, error: errorMessage };
     }
   },
   setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),

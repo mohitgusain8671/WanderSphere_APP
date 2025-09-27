@@ -3,38 +3,45 @@ import { POSTS_ROUTES } from "../../utils/constants";
 
 export const createPostsSlice = (set, get) => ({
   // Posts State
-  posts: [],
+  posts: [], // Home posts
+  userPosts: [], // Profile/user-specific posts
   currentPost: null,
   comments: [],
   isPostsLoading: false,
+  isUserPostsLoading: false,
   error: null,
   hasMore: true,
+  userHasMore: true,
   currentPage: 1,
+  userCurrentPage: 1,
 
   // Actions
   setPosts: (posts) => set({ posts }),
+  setUserPosts: (userPosts) => set({ userPosts }),
   setCurrentPost: (post) => set({ currentPost: post }),
   setComments: (comments) => set({ comments }),
   setisPoastLoading: (isPoastLoading) => set({ isPoastLoading }),
+  setIsUserPostsLoading: (isUserPostsLoading) => set({ isUserPostsLoading }),
   setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
   setHasMore: (hasMore) => set({ hasMore }),
+  setUserHasMore: (userHasMore) => set({ userHasMore }),
   setCurrentPage: (page) => set({ currentPage: page }),
+  setUserCurrentPage: (page) => set({ userCurrentPage: page }),
 
-  // Get posts with pagination
-  getPosts: async (page = 1, userId = null) => {
+  // Get posts with pagination (for home feed)
+  getPosts: async (page = 1) => {
     const { currentPage, posts } = get();
 
     // If it's page 1, show loading and reset posts
     if (page === 1) {
-      set({ isPoastLoading: true, error: null, posts: [], currentPage: 1 });
+      set({ isPostsLoading: true, error: null, posts: [], currentPage: 1 });
     }
 
     try {
       const params = {
         page,
         limit: 10,
-        ...(userId && { userId }),
       };
 
       const response = await api.get(POSTS_ROUTES.GET_POSTS, { params });
@@ -51,13 +58,13 @@ export const createPostsSlice = (set, get) => ({
           posts: updatedPosts,
           hasMore: pagination.hasMore,
           currentPage: page,
-          isPoastLoading: false,
+          isPostsLoading: false,
           error: null,
         });
 
         return { success: true, data: newPosts };
       } else {
-        set({ error: data.message, isPoastLoading: false });
+        set({ error: data.message, isPostsLoading: false });
         return { success: false, error: data.message };
       }
     } catch (error) {
@@ -65,18 +72,76 @@ export const createPostsSlice = (set, get) => ({
         error.response?.data?.message ||
         error.message ||
         "Failed to fetch posts";
-      set({ error: errorMessage, isPoastLoading: false });
+      set({ error: errorMessage, isPostsLoading: false });
       return { success: false, error: errorMessage };
     }
   },
 
-  // Load more posts (infinite scroll)
-  loadMorePosts: async (userId = null) => {
-    const { currentPage, hasMore, isPostLoading } = get();
+  // Get user-specific posts (for profile)
+  getUserPosts: async (userId, page = 1) => {
+    const { userCurrentPage, userPosts } = get();
 
-    if (!hasMore || isPostLoading) return;
+    // If it's page 1, show loading and reset posts
+    if (page === 1) {
+      set({ isUserPostsLoading: true, error: null, userPosts: [], userCurrentPage: 1 });
+    }
 
-    return await get().getPosts(currentPage + 1, userId);
+    try {
+      const params = {
+        page,
+        limit: 10,
+        userId,
+      };
+
+      const response = await api.get(POSTS_ROUTES.GET_POSTS, { params });
+      const data = response.data;
+
+      if (data.success) {
+        const newPosts = data.data.posts;
+        const pagination = data.data.pagination;
+
+        // If it's page 1, replace posts; otherwise append
+        const updatedPosts = page === 1 ? newPosts : [...userPosts, ...newPosts];
+
+        set({
+          userPosts: updatedPosts,
+          userHasMore: pagination.hasMore,
+          userCurrentPage: page,
+          isUserPostsLoading: false,
+          error: null,
+        });
+
+        return { success: true, data: newPosts };
+      } else {
+        set({ error: data.message, isUserPostsLoading: false });
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch user posts";
+      set({ error: errorMessage, isUserPostsLoading: false });
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Load more posts (infinite scroll for home)
+  loadMorePosts: async () => {
+    const { currentPage, hasMore, isPostsLoading } = get();
+
+    if (!hasMore || isPostsLoading) return;
+
+    return await get().getPosts(currentPage + 1);
+  },
+
+  // Load more user posts (infinite scroll for profile)
+  loadMoreUserPosts: async (userId) => {
+    const { userCurrentPage, userHasMore, isUserPostsLoading } = get();
+
+    if (!userHasMore || isUserPostsLoading) return;
+
+    return await get().getUserPosts(userId, userCurrentPage + 1);
   },
 
   // Get a specific post
@@ -380,12 +445,16 @@ export const createPostsSlice = (set, get) => ({
   clearPosts: () => {
     set({
       posts: [],
+      userPosts: [],
       currentPost: null,
       comments: [],
       isPostsLoading: false,
+      isUserPostsLoading: false,
       error: null,
       hasMore: true,
+      userHasMore: true,
       currentPage: 1,
+      userCurrentPage: 1,
     });
   },
 });

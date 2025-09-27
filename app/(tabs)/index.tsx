@@ -4,7 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { InfiniteScrollView } from '../../components/InfiniteScrollView';
+import { SinglePostView } from '../../components/SinglePostView';
 import { StoriesBar } from '../../components/StoriesBar';
+import { StoryViewer } from '../../components/StoryViewer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 
@@ -16,6 +18,10 @@ export default function HomeScreen() {
   const [refreshingStories, setRefreshingStories] = useState(false);
   const [selectedWanderlust, setSelectedWanderlust] = useState<any>(null);
   const [showWanderlustModal, setShowWanderlustModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
 
   // Comprehensive wanderlust destinations with full articles
   const allWanderlustDestinations = [
@@ -154,8 +160,10 @@ export default function HomeScreen() {
   };
 
   const handleStoryPress = (storyGroup: any) => {
-    // TODO: Navigate to story viewer
-    console.log('View stories for:', storyGroup.author.firstName);
+    // Find the index of the selected story group
+    const groupIndex = storyGroups.findIndex(group => group.author._id === storyGroup.author._id);
+    setSelectedStoryGroupIndex(groupIndex >= 0 ? groupIndex : 0);
+    setShowStoryViewer(true);
   };
 
   const handleAddStoryPress = () => {
@@ -167,8 +175,8 @@ export default function HomeScreen() {
   };
 
   const handlePostPress = (post: any) => {
-    // TODO: Navigate to post detail screen
-    console.log('View post:', post._id);
+    setSelectedPost(post);
+    setShowPostModal(true);
   };
 
   const handleCommentPress = (post: any) => {
@@ -826,6 +834,26 @@ export default function HomeScreen() {
           </View>
         </View>
       )}
+
+      {/* Single Post View Modal */}
+      <SinglePostView
+        post={selectedPost}
+        visible={showPostModal}
+        onClose={() => {
+          setShowPostModal(false);
+          setSelectedPost(null);
+        }}
+        onUserPress={handleUserPress}
+      />
+
+      {/* Story Viewer */}
+      <StoryViewer
+        visible={showStoryViewer}
+        storyGroups={storyGroups}
+        initialGroupIndex={selectedStoryGroupIndex}
+        onClose={() => setShowStoryViewer(false)}
+        onUserPress={handleUserPress}
+      />
     </SafeAreaView>
   );
 }

@@ -61,6 +61,17 @@ export const NOTIFICATIONS_ROUTES = {
     DELETE_NOTIFICATION: (notificationId: string) => `${API_BASE_URL}/notifications/${notificationId}`
 };
 
+// User Routes
+export const USER_ROUTES = {
+    BASE: `${API_BASE_URL}/users`,
+    GET_PROFILE: `${API_BASE_URL}/users/profile`,
+    UPDATE_PROFILE: `${API_BASE_URL}/users/profile`,
+    UPLOAD_PROFILE_PICTURE: `${API_BASE_URL}/users/profile/picture`,
+    REMOVE_PROFILE_PICTURE: `${API_BASE_URL}/users/profile/picture`,
+    GET_USER: (userId: string) => `${API_BASE_URL}/users/${userId}`,
+    SEARCH_USERS: `${API_BASE_URL}/users/search/users`
+};
+
 // App Configuration
 export const APP_NAME = 'WanderSphere';
 

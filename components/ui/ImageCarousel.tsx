@@ -1,5 +1,5 @@
 import { ResizeMode, Video } from 'expo-av';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Dimensions,
     Image,
@@ -10,27 +10,55 @@ import {
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
+interface MediaFile {
+  url: string;
+  type?: string;
+}
+
 interface ImageCarouselProps {
-  mediaFiles: any[];
+  mediaFiles: MediaFile[];
   onPress?: () => void;
+  onIndexChange?: (index: number) => void;
 }
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export const ImageCarousel: React.FC<ImageCarouselProps> = ({ mediaFiles, onPress }) => {
+export const ImageCarousel: React.FC<ImageCarouselProps> = ({ 
+  mediaFiles, 
+  onPress, 
+  onIndexChange 
+}) => {
   const { colors, isDarkMode } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleScroll = (event: any) => {
-    const slideSize = screenWidth - 64; // Account for margins
-    const index = Math.round(event.nativeEvent.contentOffset.x / slideSize);
-    setCurrentIndex(index);
+    const slideWidth = screenWidth - 16; // Snap interval width
+    const index = Math.round(event.nativeEvent.contentOffset.x / slideWidth);
+    if (index !== currentIndex && index >= 0 && index < mediaFiles.length) {
+      setCurrentIndex(index);
+      onIndexChange?.(index);
+    }
   };
 
-  const renderMediaItem = (mediaFile: any, index: number) => {
-    const itemWidth = screenWidth - 64;
+  const scrollToIndex = (index: number) => {
+    if (scrollViewRef.current && index >= 0 && index < mediaFiles.length) {
+      const slideWidth = screenWidth - 16;
+      scrollViewRef.current.scrollTo({ x: index * slideWidth, animated: true });
+    }
+  };
 
-    if (mediaFile.type === 'video') {
+  const renderMediaItem = (mediaFile: MediaFile, index: number) => {
+    const itemWidth = screenWidth - 64; // Account for PostCard container padding
+    
+    // Check if it's a video by type or file extension
+    const isVideo = mediaFile.type === 'video' || 
+                   mediaFile.url?.includes('.mp4') || 
+                   mediaFile.url?.includes('.mov') || 
+                   mediaFile.url?.includes('.avi') ||
+                   mediaFile.url?.includes('.webm');
+
+    if (isVideo) {
       return (
         <Video
           key={index}
@@ -41,9 +69,10 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({ mediaFiles, onPres
             borderRadius: 12,
           }}
           resizeMode={ResizeMode.COVER}
-          shouldPlay={false}
+          shouldPlay={index === currentIndex} // Only play current video
           isLooping
           useNativeControls
+          isMuted={false}
         />
       );
     }
@@ -77,19 +106,24 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({ mediaFiles, onPres
       <View>
         {/* Instagram-style carousel */}
         <ScrollView
+          ref={scrollViewRef}
           horizontal
-          pagingEnabled
+          pagingEnabled={false}
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={handleScroll}
           scrollEventThrottle={16}
-          contentContainerStyle={{ alignItems: 'center' }}
+          decelerationRate="fast"
+          snapToInterval={screenWidth - 16} // Account for container margin
+          snapToAlignment="start"
+          style={{ marginHorizontal: -16 }}
         >
           {mediaFiles.map((mediaFile, index) => (
             <View
               key={index}
               style={{
-                width: screenWidth - 64,
-                marginRight: index < mediaFiles.length - 1 ? 16 : 0, // 16px gap except last
+                width: screenWidth - 32,
+                marginLeft: 16,
+                marginRight: 16,
               }}
             >
               {renderMediaItem(mediaFile, index)}
@@ -101,7 +135,7 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({ mediaFiles, onPres
         {mediaFiles.length > 1 && (
           <View
             className="flex-row justify-center absolute bottom-3"
-            style={{ width: screenWidth - 64 }}
+            style={{ width: '100%' }}
           >
             {mediaFiles.map((_, index) => (
               <View

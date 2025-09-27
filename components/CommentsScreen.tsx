@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     FlatList,
     KeyboardAvoidingView,
@@ -14,69 +15,80 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
+import { COLORS } from '../utils/constants';
 import { ProfileAvatar } from './ui/ProfileAvatar';
 
 interface CommentsScreenProps {
-  postId?: string;
-  post?: any;
+  postId: string;
   onClose: () => void;
 }
 
-export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, post, onClose }) => {
+export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, onClose }) => {
   const { colors, isDarkMode } = useTheme();
-  const { user, addComment, getPostComments } = useAppStore();
+  const { user, addComment, getComments } = useAppStore();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     loadComments();
   }, []);
 
-  const loadComments = async () => {
+  const loadComments = async (pageNum = 1) => {
     try {
-      setLoading(true);
-      // For now, we'll use mock comments since the backend might not have this endpoint
-      const mockComments = [
-        {
-          _id: '1',
-          text: 'Amazing view! 🏔️',
-          author: { _id: '1', firstName: 'John', lastName: 'Doe', profilePicture: null },
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          _id: '2',
-          text: 'Wish I was there! Where is this place?',
-          author: { _id: '2', firstName: 'Jane', lastName: 'Smith', profilePicture: null },
-          createdAt: new Date(Date.now() - 7200000).toISOString(),
-        },
-      ];
-      setComments(mockComments);
+      if (pageNum === 1) {
+        setLoading(true);
+      }
+
+      const result = await getComments(postId, pageNum);
+      
+      if (result.success) {
+        if (pageNum === 1) {
+          setComments(result.data);
+        } else {
+          setComments(prev => [...prev, ...result.data]);
+        }
+        setHasMore(result.hasMore);
+        setPage(pageNum);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to load comments');
+      }
     } catch (error) {
       console.error('Error loading comments:', error);
+      Alert.alert('Error', 'Failed to load comments');
     } finally {
       setLoading(false);
     }
   };
 
+  const loadMoreComments = () => {
+    if (hasMore && !loading) {
+      loadComments(page + 1);
+    }
+  };
+
   const handleSendComment = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim() || submitting) return;
 
     try {
-      const newComment = {
-        _id: Date.now().toString(),
-        text: comment.trim(),
-        author: user,
-        createdAt: new Date().toISOString(),
-      };
-
-      setComments([newComment, ...comments]);
-      setComment('');
-
-      // TODO: Call actual API
-      // await addComment(post._id, comment.trim());
+      setSubmitting(true);
+      
+      const result = await addComment(postId, comment.trim());
+      
+      if (result.success) {
+        setComments([result.data, ...comments]);
+        setComment('');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to post comment');
+      }
     } catch (error) {
+      console.error('Error posting comment:', error);
       Alert.alert('Error', 'Failed to post comment');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -84,7 +96,7 @@ export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, post, on
     <View className="flex-row p-4">
       <ProfileAvatar 
         size={32} 
-        userId={comment.author._id}
+        userId={comment.user._id}
         style={{ marginRight: 12 }}
       />
       
@@ -94,7 +106,7 @@ export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, post, on
             className="font-semibold text-sm mr-2"
             style={{ color: colors.text }}
           >
-            {comment.author.firstName} {comment.author.lastName}
+            {comment.user.firstName} {comment.user.lastName}
           </Text>
           <Text
             className="text-xs"
@@ -166,6 +178,45 @@ export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, post, on
         keyExtractor={(item) => item._id}
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMoreComments}
+        onEndReachedThreshold={0.1}
+        refreshing={loading && page === 1}
+        onRefresh={() => loadComments(1)}
+        ListFooterComponent={() => {
+          if (loading && page > 1) {
+            return (
+              <View className="py-4 items-center">
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              </View>
+            );
+          }
+          return null;
+        }}
+        ListEmptyComponent={() => {
+          if (loading) return null;
+          return (
+            <View className="flex-1 items-center justify-center py-20">
+              <View 
+                className="w-20 h-20 rounded-full items-center justify-center mb-4"
+                style={{ backgroundColor: colors.surface }}
+              >
+                <Ionicons name="chatbubble-outline" size={32} color={colors.textSecondary} />
+              </View>
+              <Text 
+                className="text-lg font-semibold mb-2"
+                style={{ color: colors.text }}
+              >
+                No comments yet
+              </Text>
+              <Text 
+                className="text-sm text-center px-8"
+                style={{ color: colors.textSecondary }}
+              >
+                Be the first to comment on this post!
+              </Text>
+            </View>
+          );
+        }}
       />
 
       {/* Comment Input */}
@@ -202,17 +253,21 @@ export const CommentsScreen: React.FC<CommentsScreenProps> = ({ postId, post, on
           
           <TouchableOpacity
             onPress={handleSendComment}
-            disabled={!comment.trim()}
+            disabled={!comment.trim() || submitting}
             className="w-10 h-10 rounded-full items-center justify-center"
             style={{
-              backgroundColor: comment.trim() ? '#3B82F6' : colors.surface,
+              backgroundColor: (comment.trim() && !submitting) ? '#3B82F6' : colors.surface,
             }}
           >
-            <Ionicons 
-              name="send" 
-              size={18} 
-              color={comment.trim() ? 'white' : colors.textSecondary} 
-            />
+            {submitting ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <Ionicons 
+                name="send" 
+                size={18} 
+                color={(comment.trim() && !submitting) ? 'white' : colors.textSecondary} 
+              />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

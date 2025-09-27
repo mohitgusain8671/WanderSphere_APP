@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAppStore } from "../store";
-import { COLORS } from "../utils/constants";
+import { COLORS, USER_ROLES } from "../utils/constants";
 import { CommentsScreen } from "./CommentsScreen";
 import { ImageCarousel } from "./ui/ImageCarousel";
 import { ProfileAvatar } from "./ui/ProfileAvatar";
@@ -68,7 +68,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     ]);
   };
 
-  const canDelete = user?.role === "admin" || post.author._id === user?.id;
+  const canDelete = user?.role === USER_ROLES.ADMIN || post.author._id === user?._id;
 
   const truncatedDescription =
     post.description && post.description.length > MAX_DESCRIPTION_LENGTH
