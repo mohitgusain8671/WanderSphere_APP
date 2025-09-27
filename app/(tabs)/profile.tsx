@@ -2,16 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Image,
-    ScrollView,
-    StatusBar,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  Linking,
+  ScrollView,
+  Share,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -43,6 +45,7 @@ export default function UniqueProfileScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedTab, setSelectedTab] = useState('posts');
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('All Countries');
   const scrollY = new Animated.Value(0);
 
@@ -146,6 +149,107 @@ export default function UniqueProfileScreen() {
     { name: 'City Explorer', icon: 'business', color: '#6366F1' },
     { name: 'Solo Traveler', icon: 'person', color: '#EC4899' }
   ];
+
+  // Social Media Sharing Functions
+  const shareProfile = async () => {
+    try {
+      const profileUrl = `https://wandersphere.app/profile/${user?._id}`;
+      const shareMessage = `Check out ${user?.firstName} ${user?.lastName}'s travel profile on WanderSphere! 🌍✈️\n\n${profileData.bio}\n\n📍 ${profileStats.postsCount} travel posts\n👥 ${profileStats.followersCount} followers\n\n${profileUrl}`;
+      
+      const result = await Share.share({
+        message: shareMessage,
+        url: profileUrl,
+        title: `${user?.firstName}'s Travel Profile - WanderSphere`
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log('Profile shared successfully');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share profile');
+    }
+  };
+
+  const shareToWhatsApp = async () => {
+    try {
+      const profileUrl = `https://wandersphere.app/profile/${user?._id}`;
+      const message = `Hey! Check out my travel adventures on WanderSphere 🌍✈️\n\n${user?.firstName} ${user?.lastName}\n${profileData.bio}\n\n📸 ${profileStats.postsCount} posts | 👥 ${profileStats.followersCount} followers\n\n${profileUrl}`;
+      const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}`;
+      
+      const canOpen = await Linking.canOpenURL(whatsappUrl);
+      if (canOpen) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        // Fallback to web WhatsApp
+        const webWhatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        await Linking.openURL(webWhatsappUrl);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'WhatsApp not available');
+    }
+  };
+
+  const shareToInstagram = async () => {
+    try {
+      const instagramUrl = 'instagram://';
+      const canOpen = await Linking.canOpenURL(instagramUrl);
+      
+      if (canOpen) {
+        // For Instagram, we can only open the app and let user manually share
+        await Linking.openURL(instagramUrl);
+        Alert.alert(
+          'Share to Instagram',
+          'Instagram has been opened. You can now create a story or post and mention your WanderSphere profile!',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Instagram not installed', 'Please install Instagram to share');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open Instagram');
+    }
+  };
+
+  const shareToTwitter = async () => {
+    try {
+      const profileUrl = `https://wandersphere.app/profile/${user?._id}`;
+      const tweetText = `Check out my travel journey on @WanderSphere! 🌍✈️\n\n📸 ${profileStats.postsCount} adventures shared\n👥 ${profileStats.followersCount} travel buddies\n\n${profileUrl}`;
+      const twitterUrl = `twitter://post?message=${encodeURIComponent(tweetText)}`;
+      
+      const canOpen = await Linking.canOpenURL(twitterUrl);
+      if (canOpen) {
+        await Linking.openURL(twitterUrl);
+      } else {
+        // Fallback to web Twitter
+        const webTwitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+        await Linking.openURL(webTwitterUrl);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share to Twitter');
+    }
+  };
+
+  const shareToFacebook = async () => {
+    try {
+      const profileUrl = `https://wandersphere.app/profile/${user?._id}`;
+      const facebookUrl = `fb://facewebmodal/f?href=${encodeURIComponent(profileUrl)}`;
+      
+      const canOpen = await Linking.canOpenURL(facebookUrl);
+      if (canOpen) {
+        await Linking.openURL(facebookUrl);
+      } else {
+        // Fallback to web Facebook
+        const webFacebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+        await Linking.openURL(webFacebookUrl);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share to Facebook');
+    }
+  };
+
+  const showShareOptions = () => {
+    setShowShareModal(true);
+  };
 
   // Real data
   const userPosts = posts.filter((post: any) => post.author._id === user?._id);
@@ -525,6 +629,19 @@ export default function UniqueProfileScreen() {
         
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <TouchableOpacity
+            onPress={showShareOptions}
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
+              borderRadius: 20,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)',
+            }}
+          >
+            <Ionicons name="share-social" size={22} color="#10B981" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
             onPress={() => router.push('/(tabs)/add-post')}
             style={{
               backgroundColor: '#3B82F6',
@@ -861,25 +978,29 @@ export default function UniqueProfileScreen() {
             </TouchableOpacity>
             
             <TouchableOpacity
+              onPress={showShareOptions}
               style={{
                 flex: 1,
-                backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
+                backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
                 borderRadius: 25,
                 paddingVertical: 16,
                 alignItems: 'center',
                 borderWidth: 1.5,
-                borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.3)',
+                borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.3)',
               }}
             >
-              <Text
-                style={{
-                  color: '#3B82F6',
-                  fontSize: 16,
-                  fontWeight: '700',
-                }}
-              >
-                Share Profile
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="share-social" size={18} color="#10B981" style={{ marginRight: 6 }} />
+                <Text
+                  style={{
+                    color: '#10B981',
+                    fontSize: 16,
+                    fontWeight: '700',
+                  }}
+                >
+                  Share Profile
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -1407,6 +1528,348 @@ export default function UniqueProfileScreen() {
                     Save Changes
                   </Text>
                 </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </BlurView>
+        </View>
+      )}
+
+      {/* Share Profile Modal */}
+      {showShareModal && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'flex-end',
+            zIndex: 1000,
+          }}
+        >
+          <BlurView
+            intensity={100}
+            tint={isDarkMode ? 'dark' : 'light'}
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: 40,
+            }}
+          >
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Modal Header */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 24,
+                paddingVertical: 20,
+                borderBottomWidth: 1,
+                borderBottomColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)'
+              }}>
+                <Text style={{
+                  fontSize: 20,
+                  fontWeight: '800',
+                  color: colors.text
+                }}>
+                  🌍 Share Your Profile
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowShareModal(false)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Ionicons name="close" size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Profile Preview */}
+              <View style={{ 
+                paddingHorizontal: 24, 
+                paddingVertical: 20,
+                alignItems: 'center'
+              }}>
+                <View style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 12,
+                  borderWidth: 2,
+                  borderColor: '#3B82F6'
+                }}>
+                  <Text style={{ fontSize: 24 }}>🌍</Text>
+                </View>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: '700',
+                  color: colors.text,
+                  marginBottom: 4
+                }}>
+                  {user?.firstName} {user?.lastName}
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  marginBottom: 16
+                }}>
+                  {profileStats.postsCount} posts • {profileStats.followersCount} followers
+                </Text>
+              </View>
+
+              {/* Social Media Options */}
+              <View style={{ paddingHorizontal: 24 }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.text,
+                  marginBottom: 16
+                }}>
+                  📱 Share on Social Media
+                </Text>
+                
+                <View style={{ gap: 12 }}>
+                  {/* WhatsApp */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      shareToWhatsApp();
+                      setShowShareModal(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                      backgroundColor: isDarkMode ? 'rgba(37, 211, 102, 0.1)' : 'rgba(37, 211, 102, 0.05)',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(37, 211, 102, 0.2)'
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#25D366',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16
+                    }}>
+                      <Ionicons name="logo-whatsapp" size={24} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: 2
+                      }}>
+                        WhatsApp
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary
+                      }}>
+                        Share with friends and family
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={20} color="#25D366" />
+                  </TouchableOpacity>
+
+                  {/* Instagram */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      shareToInstagram();
+                      setShowShareModal(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                      backgroundColor: isDarkMode ? 'rgba(225, 48, 108, 0.1)' : 'rgba(225, 48, 108, 0.05)',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(225, 48, 108, 0.2)'
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#E1306C',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16
+                    }}>
+                      <Ionicons name="logo-instagram" size={24} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: 2
+                      }}>
+                        Instagram
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary
+                      }}>
+                        Share to your story or feed
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={20} color="#E1306C" />
+                  </TouchableOpacity>
+
+                  {/* Twitter */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      shareToTwitter();
+                      setShowShareModal(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                      backgroundColor: isDarkMode ? 'rgba(29, 161, 242, 0.1)' : 'rgba(29, 161, 242, 0.05)',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(29, 161, 242, 0.2)'
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#1DA1F2',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16
+                    }}>
+                      <Ionicons name="logo-twitter" size={24} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: 2
+                      }}>
+                        Twitter
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary
+                      }}>
+                        Tweet your travel journey
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={20} color="#1DA1F2" />
+                  </TouchableOpacity>
+
+                  {/* Facebook */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      shareToFacebook();
+                      setShowShareModal(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                      backgroundColor: isDarkMode ? 'rgba(66, 103, 178, 0.1)' : 'rgba(66, 103, 178, 0.05)',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(66, 103, 178, 0.2)'
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#4267B2',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16
+                    }}>
+                      <Ionicons name="logo-facebook" size={24} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: 2
+                      }}>
+                        Facebook
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary
+                      }}>
+                        Share with your network
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={20} color="#4267B2" />
+                  </TouchableOpacity>
+
+                  {/* More Options */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      shareProfile();
+                      setShowShareModal(false);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: 16,
+                      backgroundColor: isDarkMode ? 'rgba(107, 114, 128, 0.1)' : 'rgba(107, 114, 128, 0.05)',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(107, 114, 128, 0.2)'
+                    }}
+                  >
+                    <View style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: '#6B7280',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16
+                    }}>
+                      <Ionicons name="share-outline" size={24} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: colors.text,
+                        marginBottom: 2
+                      }}>
+                        More Options
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary
+                      }}>
+                        Email, SMS, and other apps
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={20} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </ScrollView>
           </BlurView>
