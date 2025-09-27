@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, RefreshControl, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { formatDistanceToNow } from 'date-fns';
+import React, { useEffect, useState } from 'react';
+import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
-import { formatDistanceToNow } from 'date-fns';
 import { COLORS } from '../../utils/constants';
 
 export default function NotificationsScreen() {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const { 
     notifications, 
     unreadCount,
@@ -145,12 +145,22 @@ export default function NotificationsScreen() {
   const renderNotification = ({ item: notification }: { item: any }) => (
     <TouchableOpacity
       onPress={() => handleNotificationPress(notification)}
-      className={`flex-row items-start p-4 mb-2 rounded-xl ${
-        !notification.isRead ? 'border-l-4' : ''
-      }`}
       style={{ 
-        backgroundColor: colors.surface,
-        borderLeftColor: !notification.isRead ? COLORS.primary : 'transparent'
+        backgroundColor: !notification.isRead 
+          ? (isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)')
+          : colors.surface,
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        borderWidth: !notification.isRead ? 1 : 0,
+        borderColor: !notification.isRead ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+        elevation: !notification.isRead ? 2 : 1,
+        shadowColor: !notification.isRead ? '#10B981' : '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: !notification.isRead ? 0.1 : 0.05,
+        shadowRadius: 4,
       }}
     >
       {/* Sender Avatar */}
@@ -207,70 +217,113 @@ export default function NotificationsScreen() {
   );
 
   const renderHeader = () => (
-    <View className="px-4 pt-2 pb-4">
-      <View className="flex-row items-center justify-between mb-4">
-        <Text 
-          className="text-2xl font-bold"
-          style={{ color: colors.text }}
-        >
-          Notifications
-        </Text>
+    <View style={{ 
+      paddingHorizontal: 20,
+      paddingTop: 16,
+      paddingBottom: 20,
+      backgroundColor: colors.background,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border || (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')
+    }}>
+      {/* Main Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{
+            width: 4,
+            height: 24,
+            backgroundColor: '#10B981',
+            borderRadius: 2,
+            marginRight: 12,
+          }} />
+          <Text style={{
+            fontSize: 24,
+            fontWeight: '800',
+            color: colors.text,
+            letterSpacing: -0.5,
+          }}>
+            Alerts
+          </Text>
+          {unreadCount > 0 && (
+            <View style={{
+              backgroundColor: '#EF4444',
+              borderRadius: 10,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              marginLeft: 12,
+            }}>
+              <Text style={{
+                color: 'white',
+                fontSize: 12,
+                fontWeight: '700',
+              }}>
+                {unreadCount}
+              </Text>
+            </View>
+          )}
+        </View>
+        
+        {/* Mark All Read Button on Right */}
         {unreadCount > 0 && (
-          <View 
-            className="px-2 py-1 rounded-full"
-            style={{ backgroundColor: COLORS.primary }}
+          <TouchableOpacity
+            onPress={handleMarkAllAsRead}
+            style={{
+              backgroundColor: '#10B981',
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+            }}
           >
-            <Text className="text-white text-xs font-semibold">
-              {unreadCount}
+            <Text style={{
+              color: 'white',
+              fontSize: 14,
+              fontWeight: '600',
+            }}>
+              Mark all read
             </Text>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
 
-      {/* Action Buttons */}
-      <View className="flex-row space-x-2 mb-4">
+      {/* Filter and Clear Actions */}
+      <View style={{ flexDirection: 'row', gap: 12 }}>
         <TouchableOpacity
           onPress={() => setShowUnreadOnly(!showUnreadOnly)}
-          className={`flex-1 py-2 px-4 rounded-lg`}
-          style={{ 
-            backgroundColor: showUnreadOnly ? COLORS.primary : colors.surface 
+          style={{
+            flex: 1,
+            backgroundColor: showUnreadOnly ? '#10B981' : colors.surface,
+            borderRadius: 12,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderWidth: 1,
+            borderColor: showUnreadOnly ? '#10B981' : (colors.border || 'rgba(0, 0, 0, 0.1)'),
           }}
         >
-          <Text 
-            className="text-center font-semibold"
-            style={{ 
-              color: showUnreadOnly ? 'white' : colors.text 
-            }}
-          >
+          <Text style={{
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: '600',
+            color: showUnreadOnly ? 'white' : colors.text,
+          }}>
             {showUnreadOnly ? 'Show All' : 'Unread Only'}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={handleMarkAllAsRead}
-          className="px-4 py-2 rounded-lg"
-          style={{ backgroundColor: colors.surface }}
-          disabled={unreadCount === 0}
-        >
-          <Text 
-            className="font-semibold"
-            style={{ 
-              color: unreadCount > 0 ? colors.text : colors.textSecondary 
-            }}
-          >
-            Mark All Read
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
           onPress={handleClearAll}
-          className="px-4 py-2 rounded-lg"
-          style={{ backgroundColor: colors.surface }}
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderWidth: 1,
+            borderColor: colors.border || 'rgba(239, 68, 68, 0.2)',
+          }}
         >
-          <Text 
-            className="font-semibold"
-            style={{ color: '#EF4444' }}
-          >
+          <Text style={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: '#EF4444',
+          }}>
             Clear All
           </Text>
         </TouchableOpacity>
@@ -279,26 +332,46 @@ export default function NotificationsScreen() {
   );
 
   const renderEmptyState = () => (
-    <View className="flex-1 items-center justify-center py-20">
-      <View 
-        className="w-20 h-20 rounded-full items-center justify-center mb-4"
-        style={{ backgroundColor: colors.surface }}
-      >
-        <Ionicons name="notifications-outline" size={32} color={colors.textSecondary} />
+    <View style={{ 
+      flex: 1, 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      paddingVertical: 60,
+      paddingHorizontal: 32,
+    }}>
+      <View style={{
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: colors.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: colors.border || 'rgba(16, 185, 129, 0.2)',
+        borderStyle: 'dashed',
+      }}>
+        <Ionicons name="notifications-outline" size={36} color="#10B981" />
       </View>
-      <Text 
-        className="text-lg font-semibold mb-2"
-        style={{ color: colors.text }}
-      >
-        No notifications
+      <Text style={{
+        fontSize: 20,
+        fontWeight: '700',
+        color: colors.text,
+        marginBottom: 8,
+        textAlign: 'center',
+      }}>
+        {showUnreadOnly ? 'No Unread Alerts' : 'All Caught Up!'}
       </Text>
-      <Text 
-        className="text-center text-base px-8"
-        style={{ color: colors.textSecondary }}
-      >
+      <Text style={{
+        fontSize: 15,
+        color: colors.textSecondary,
+        textAlign: 'center',
+        lineHeight: 22,
+        fontWeight: '500',
+      }}>
         {showUnreadOnly 
-          ? "You don't have any unread notifications."
-          : "You're all caught up! New notifications will appear here."
+          ? "You don't have any unread notifications at the moment."
+          : "You're all set! New notifications will appear here when they arrive."
         }
       </Text>
     </View>
