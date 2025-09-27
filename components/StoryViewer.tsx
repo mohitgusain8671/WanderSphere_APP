@@ -7,6 +7,7 @@ import {
     Dimensions,
     Image,
     Modal,
+    Share,
     StatusBar,
     Text,
     TouchableOpacity,
@@ -40,13 +41,17 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   onUserPress,
 }) => {
   const { colors, isDarkMode } = useTheme();
-  const { user, deleteStory } = useAppStore();
+  const { user, deleteStory, toggleLikeStory } = useAppStore();
   
   const [currentGroupIndex, setCurrentGroupIndex] = useState(initialGroupIndex);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<Video>(null);
@@ -56,15 +61,23 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const currentStory = currentGroup?.stories?.[currentStoryIndex];
   const canDelete = user?.role === USER_ROLES.ADMIN || currentStory?.author?._id === user?._id;
 
-  // Reset progress when story changes
+  // Reset progress and like state when story changes
   useEffect(() => {
     setProgress(0);
     setIsLoading(true);
+    setShowReactions(false);
+    
+    // Initialize like state for current story
+    if (currentStory) {
+      const userLiked = currentStory.isLikedByCurrentUser || false;
+      setIsLiked(userLiked);
+      setLikesCount(currentStory.likesCount || 0);
+    }
     
     // Small delay to allow media to load
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
-  }, [currentGroupIndex, currentStoryIndex]);
+  }, [currentGroupIndex, currentStoryIndex, currentStory, user?._id]);
 
   // Progress timer
   useEffect(() => {
@@ -139,6 +152,38 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     }
   }, []);
 
+  const handleLike = useCallback(async () => {
+    if (!currentStory || !user) return;
+
+    try {
+      const result = await toggleLikeStory(currentStory._id);
+      if (result.success) {
+        const { isLiked: newIsLiked, likesCount: newLikesCount } = result.data;
+        setIsLiked(newIsLiked);
+        setLikesCount(newLikesCount);
+        
+        // Show animation only when liking (not unliking)
+        if (newIsLiked) {
+          setShowLikeAnimation(true);
+          setTimeout(() => setShowLikeAnimation(false), 1000);
+        }
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update story like');
+      }
+    } catch (error) {
+      console.error('Error liking/unliking story:', error);
+      Alert.alert('Error', 'Failed to update story like');
+    }
+  }, [currentStory, user, toggleLikeStory]);
+
+  const handleDoubleTap = useCallback(() => {
+    if (!isLiked) {
+      handleLike();
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 1500);
+    }
+  }, [handleLike, isLiked]);
+
   const handleDelete = useCallback(() => {
     if (!currentStory || !canDelete) return;
 
@@ -169,12 +214,53 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     );
   }, [currentStory, canDelete, deleteStory, nextStory]);
 
+  const handlePrevious = useCallback(() => {
+    if (currentStoryIndex > 0) {
+      setCurrentStoryIndex(currentStoryIndex - 1);
+    }
+  }, [currentStoryIndex]);
+
+  const handleNext = useCallback(() => {
+    if (currentGroup && currentStoryIndex < currentGroup.stories.length - 1) {
+      setCurrentStoryIndex(currentStoryIndex + 1);
+    } else {
+      // If at the end of current group, go to next group or close
+      nextStory();
+    }
+  }, [currentStoryIndex, currentGroup, nextStory]);
+
+  const handleShare = useCallback(async () => {
+    if (!currentStory) return;
+    
+    try {
+      const shareOptions = {
+        message: `Check out this story by ${currentStory.author.username} on WanderSphere!`,
+        url: currentStory.mediaFile.url,
+        title: 'WanderSphere Story'
+      };
+      
+      await Share.share(shareOptions);
+    } catch (error) {
+      console.error('Error sharing story:', error);
+      Alert.alert('Error', 'Failed to share story');
+    }
+  }, [currentStory]);
+
+  const handleReply = useCallback(() => {
+    // For now, show an alert. In the future, this could open a comment modal
+    Alert.alert(
+      'Reply to Story',
+      'Reply functionality will be implemented soon!',
+      [{ text: 'OK' }]
+    );
+  }, []);
+
   const renderProgressBars = () => {
     if (!currentGroup) return null;
 
     return (
       <View className="flex-row px-4 pb-3">
-        {currentGroup.stories.map((_, index) => (
+        {currentGroup.stories.map((_: any, index: number) => (
           <View key={index} className="flex-1 mx-1">
             <View
               className="h-0.5 rounded-full"
@@ -204,7 +290,10 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (!currentStory) return null;
 
     return (
-      <View className="flex-row items-center justify-between px-4 pb-3">
+      <View 
+        className="flex-row items-center justify-between px-4 pb-3"
+        style={{ backgroundColor: 'transparent' }}
+      >
         <TouchableOpacity
           className="flex-row items-center flex-1"
           onPress={() => onUserPress?.(currentStory.author._id)}
@@ -216,16 +305,53 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             style={{ marginRight: 12 }}
           />
           <View className="flex-1">
-            <Text className="text-white font-semibold text-base">
+            <Text 
+              className="text-white font-semibold text-base"
+              style={{ 
+                textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                textShadowOffset: { width: 1, height: 1 },
+                textShadowRadius: 3
+              }}
+            >
               {currentStory.author.firstName} {currentStory.author.lastName}
             </Text>
-            <Text className="text-gray-200 text-sm">
+            <Text 
+              className="text-gray-200 text-sm"
+              style={{ 
+                textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                textShadowOffset: { width: 1, height: 1 },
+                textShadowRadius: 3
+              }}
+            >
               {formatDistanceToNow(new Date(currentStory.createdAt), { addSuffix: true })}
             </Text>
           </View>
         </TouchableOpacity>
 
         <View className="flex-row items-center">
+          {/* Like Counter */}
+          {likesCount > 0 && (
+            <View 
+              className="flex-row items-center mr-3 px-2 py-1 rounded-full"
+              style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+            >
+              <Ionicons name="heart" size={16} color="#EF4444" />
+              <Text className="text-white text-sm ml-1">{likesCount}</Text>
+            </View>
+          )}
+
+          {/* Reactions Button */}
+          <TouchableOpacity 
+            onPress={() => setShowReactions(!showReactions)}
+            className="p-2 mr-2"
+            style={{
+              borderRadius: 20,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <Ionicons name="happy-outline" size={20} color="white" />
+          </TouchableOpacity>
+
           {canDelete && (
             <TouchableOpacity onPress={handleDelete} className="p-2 mr-2">
               <Ionicons name="trash-outline" size={24} color="white" />
@@ -263,10 +389,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
         onPressOut={handleLongPressEnd}
         style={{
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop: 80, // Leave space for header
-          paddingBottom: 40
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
         }}
       >
         {isVideo ? (
@@ -276,8 +403,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             style={{
               width: screenWidth,
               height: screenHeight,
+              position: 'absolute',
+              top: 0,
+              left: 0
             }}
-            resizeMode={ResizeMode.CONTAIN}
+            resizeMode={ResizeMode.COVER}
             shouldPlay={!isPaused && visible}
             isLooping={false}
             useNativeControls={false}
@@ -289,15 +419,18 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
             style={{
               width: screenWidth,
               height: screenHeight,
+              position: 'absolute',
+              top: 0,
+              left: 0
             }}
-            resizeMode="contain"
+            resizeMode="cover"
             onLoad={() => setIsLoading(false)}
           />
         )}
 
         {currentStory.caption && (
-          <View className="absolute bottom-20 left-0 right-0 px-4">
-            <Text className="text-white text-base text-center">
+          <View className="absolute bottom-32 left-0 right-0 px-4">
+            <Text className="text-white text-base text-center shadow-lg">
               {currentStory.caption}
             </Text>
           </View>
@@ -324,17 +457,165 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     >
       <StatusBar hidden />
       <View className="flex-1 bg-black">
-        <SafeAreaView className="flex-1">
+        {/* Background overlay for better contrast */}
+        <View className="absolute inset-0 bg-black opacity-30 z-10" />
+        <SafeAreaView className="flex-1 relative z-20">
           {/* Progress bars */}
-          <View className="pt-3">
+          <View 
+            className="absolute top-0 left-0 right-0 pt-1 z-30"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+          >
             {renderProgressBars()}
           </View>
 
           {/* Story header */}
-          {renderStoryHeader()}
+          <View 
+            className="absolute top-12 left-0 right-0 z-30"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+          >
+            {renderStoryHeader()}
+          </View>
 
           {/* Story content */}
           {renderStoryContent()}
+
+          {/* Bottom Interaction Controls */}
+          <View className="absolute bottom-0 left-0 right-0 pb-4">
+            {/* Main Interaction Controls */}
+            <View className="flex-row justify-center items-center px-6 py-3 mb-2">
+              {/* Like Button */}
+              <TouchableOpacity 
+                onPress={handleLike}
+                className="items-center mr-8"
+                activeOpacity={0.7}
+              >
+                <View 
+                  className="p-3 rounded-full"
+                  style={{ 
+                    backgroundColor: isLiked ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                    borderWidth: isLiked ? 2 : 0,
+                    borderColor: '#EF4444'
+                  }}
+                >
+                  <Ionicons 
+                    name={isLiked ? "heart" : "heart-outline"} 
+                    size={24} 
+                    color={isLiked ? "#EF4444" : "white"} 
+                  />
+                </View>
+                <Text className="text-white text-xs mt-1 font-medium">
+                  {likesCount > 0 ? likesCount : 'Like'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Share Button */}
+              <TouchableOpacity 
+                className="items-center mr-8"
+                onPress={handleShare}
+                activeOpacity={0.7}
+              >
+                <View 
+                  className="p-3 rounded-full"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+                >
+                  <Ionicons name="share-outline" size={24} color="white" />
+                </View>
+                <Text className="text-white text-xs mt-1">Share</Text>
+              </TouchableOpacity>
+
+              {/* Comment Button */}
+              <TouchableOpacity 
+                className="items-center"
+                onPress={handleReply}
+                activeOpacity={0.7}
+              >
+                <View 
+                  className="p-3 rounded-full"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+                >
+                  <Ionicons name="chatbubble-outline" size={24} color="white" />
+                </View>
+                <Text className="text-white text-xs mt-1">Reply</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Navigation Controls */}
+            <View className="flex-row justify-between items-center px-4 py-1">
+              {/* Previous Story Button */}
+              {currentStoryIndex > 0 && (
+                <TouchableOpacity 
+                  onPress={handlePrevious}
+                  className="flex-row items-center px-4 py-2 rounded-full"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-back" size={20} color="white" />
+                  <Text className="text-white text-sm ml-1">Previous</Text>
+                </TouchableOpacity>
+              )}
+
+              <View className="flex-1" />
+
+              {/* Story Counter */}
+              {currentGroup && (
+                <View 
+                  className="px-3 py-1 rounded-full"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                >
+                  <Text className="text-white text-sm">
+                    {currentStoryIndex + 1} / {currentGroup.stories.length}
+                  </Text>
+                </View>
+              )}
+
+              <View className="flex-1" />
+
+              {/* Next Story Button */}
+              {currentGroup && (currentStoryIndex < currentGroup.stories.length - 1) && (
+                <TouchableOpacity 
+                  onPress={handleNext}
+                  className="flex-row items-center px-4 py-2 rounded-full"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                  activeOpacity={0.7}
+                >
+                  <Text className="text-white text-sm mr-1">Next</Text>
+                  <Ionicons name="chevron-forward" size={20} color="white" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* Reactions Modal */}
+          {showReactions && (
+            <View className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-80 p-4">
+              <View className="flex-row justify-around items-center py-6">
+                {['❤️', '😂', '😮', '😢', '😡', '👍'].map((emoji, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      // Handle reaction
+                      setShowReactions(false);
+                    }}
+                    className="p-3"
+                  >
+                    <Text style={{ fontSize: 32 }}>{emoji}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Like Animation */}
+          {showLikeAnimation && (
+            <View className="absolute inset-0 justify-center items-center pointer-events-none">
+              <View className="items-center">
+                <Ionicons name="heart" size={100} color="#EF4444" />
+                <Text className="text-white text-lg font-bold mt-2 opacity-80">
+                  Liked!
+                </Text>
+              </View>
+            </View>
+          )}
         </SafeAreaView>
       </View>
     </Modal>
