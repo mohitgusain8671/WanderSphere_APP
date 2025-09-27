@@ -120,3 +120,22 @@ export const USER_ROLES = {
     USER: 'user',
     ADMIN: 'admin'
 };
+
+// Travel Tips
+export const TRAVEL_TIPS = [
+    { tip: "🎒 Pack light, travel far", author: "Every seasoned traveler" },
+    { tip: "📸 Capture moments, not just photos", author: "The mindful explorer" },
+    { tip: "🗺️ Get lost to find yourself", author: "Ancient travel wisdom" },
+    { tip: "🌅 Early bird catches the sunrise", author: "Nature's photographer" },
+    { tip: "🌍 The world is a book, read every page", author: "Saint Augustine" },
+    { tip: "✈️ Adventure is worthwhile in itself", author: "Amelia Earhart" },
+    { tip: "🏔️ Mountains know secrets we need to learn", author: "The wise wanderer" },
+    { tip: "🌊 Let the waves wash your worries away", author: "Coastal philosophy" },
+    { tip: "🚂 The journey matters more than the destination", author: "Ralph Waldo Emerson" },
+    { tip: "🎯 Travel makes one modest, you see what a tiny place you occupy", author: "Gustave Flaubert" },
+    { tip: "🌟 Collect moments, not things", author: "Modern nomad" },
+    { tip: "🗝️ Travel is the only thing you buy that makes you richer", author: "Anonymous" },
+    { tip: "🌈 Life is short and the world is wide", author: "Simon Raven" },
+    { tip: "🧭 Not all those who wander are lost", author: "J.R.R. Tolkien" },
+    { tip: "🎭 Travel far enough, you meet yourself", author: "David Mitchell" }
+];
