@@ -46,8 +46,10 @@ export default function UniqueProfileScreen() {
   const [selectedTab, setSelectedTab] = useState('posts');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showActionDrawer, setShowActionDrawer] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('All Countries');
   const scrollY = new Animated.Value(0);
+  const drawerAnimation = new Animated.Value(0);
 
   // Dynamic profile elements with defaults
   const [profileData, setProfileData] = useState({
@@ -411,7 +413,7 @@ export default function UniqueProfileScreen() {
           flexDirection: 'row',
           flexWrap: 'wrap',
           paddingHorizontal: 16,
-          gap: 8,
+          gap: 12,
         }}
       >
       {posts.length === 0 ? (
@@ -419,31 +421,42 @@ export default function UniqueProfileScreen() {
           style={{
             width: '100%',
             alignItems: 'center',
-            paddingVertical: 60,
+            paddingVertical: 80,
+            backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.4)' : 'rgba(248, 250, 252, 0.6)',
+            borderRadius: 24,
+            marginHorizontal: 4,
+            borderWidth: 1,
+            borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
           }}
         >
           <View
             style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)',
               justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: 20,
-              borderWidth: 2,
+              marginBottom: 24,
+              borderWidth: 3,
               borderStyle: 'dashed',
-              borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
+              borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.3)',
+              elevation: 4,
+              shadowColor: '#3B82F6',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
             }}
           >
-            <Ionicons name="camera" size={40} color="#3B82F6" />
+            <Ionicons name="camera" size={48} color="#3B82F6" />
           </View>
           <Text
             style={{
-              fontSize: 24,
-              fontWeight: '800',
+              fontSize: 26,
+              fontWeight: '900',
               color: colors.text,
-              marginBottom: 8,
+              marginBottom: 12,
+              letterSpacing: -0.5,
             }}
           >
             Share Your Journey
@@ -453,29 +466,38 @@ export default function UniqueProfileScreen() {
               fontSize: 16,
               color: colors.textSecondary,
               textAlign: 'center',
-              marginBottom: 24,
-              lineHeight: 22,
+              marginBottom: 32,
+              lineHeight: 24,
+              paddingHorizontal: 20,
             }}
           >
-            Start documenting your travel adventures{'\n'}and inspiring others
+            Start documenting your travel adventures{'\n'}and inspiring others to explore the world
           </Text>
           <TouchableOpacity
             onPress={() => router.push('/(tabs)/add-post')}
             style={{
               backgroundColor: '#3B82F6',
-              paddingHorizontal: 32,
-              paddingVertical: 16,
-              borderRadius: 25,
+              paddingHorizontal: 40,
+              paddingVertical: 18,
+              borderRadius: 28,
               flexDirection: 'row',
               alignItems: 'center',
+              elevation: 8,
+              shadowColor: '#3B82F6',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.4,
+              shadowRadius: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.2)',
             }}
           >
-            <Ionicons name="add" size={20} color="white" style={{ marginRight: 8 }} />
+            <Ionicons name="add" size={22} color="white" style={{ marginRight: 10 }} />
             <Text
               style={{
                 color: 'white',
-                fontSize: 16,
-                fontWeight: '700',
+                fontSize: 17,
+                fontWeight: '800',
+                letterSpacing: 0.5,
               }}
             >
               Create First Post
@@ -484,18 +506,25 @@ export default function UniqueProfileScreen() {
         </View>
       ) : (
         posts.map((post: any, index: number) => {
-          const itemWidth = (SCREEN_WIDTH - 48) / 2;
+          const itemWidth = (SCREEN_WIDTH - 56) / 2;
           return (
             <TouchableOpacity
               key={post.id}
               onPress={() => console.log('Post pressed:', post.id)}
               style={{
                 width: itemWidth,
-                height: itemWidth * 1.2,
-                borderRadius: 16,
+                height: itemWidth * 1.25,
+                borderRadius: 20,
                 overflow: 'hidden',
-                backgroundColor: colors.surface,
-                marginBottom: 12,
+                backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.95)',
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)',
+                elevation: 6,
+                shadowColor: isDarkMode ? '#000' : '#3B82F6',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 12,
               }}
             >
               {post.thumbnail ? (
@@ -503,7 +532,7 @@ export default function UniqueProfileScreen() {
                   source={{ uri: post.thumbnail }}
                   style={{
                     width: '100%',
-                    height: '75%',
+                    height: '72%',
                   }}
                   resizeMode="cover"
                 />
@@ -511,43 +540,70 @@ export default function UniqueProfileScreen() {
                 <View
                   style={{
                     width: '100%',
-                    height: '75%',
-                    backgroundColor: colors.border,
+                    height: '72%',
+                    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
                   <Ionicons
                     name={post.type === 'video' ? 'play' : 'image'}
-                    size={30}
-                    color={colors.textSecondary}
+                    size={32}
+                    color="#3B82F6"
                   />
                 </View>
               )}
               
-              <View style={{ padding: 12 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {/* Enhanced Overlay Gradient */}
+              <View style={{
+                position: 'absolute',
+                bottom: 28,
+                left: 0,
+                right: 0,
+                height: 40,
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+              }} />
+              
+              <View style={{ 
+                padding: 14,
+                backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center',
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.08)',
+                    borderRadius: 12,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                  }}>
                     <Ionicons name="heart" size={14} color="#EF4444" />
                     <Text
                       style={{
                         marginLeft: 4,
                         fontSize: 12,
-                        fontWeight: '600',
-                        color: colors.textSecondary,
+                        fontWeight: '700',
+                        color: '#EF4444',
                       }}
                     >
                       {post.likesCount}
                     </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center',
+                    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)',
+                    borderRadius: 12,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                  }}>
                     <Ionicons name="chatbubble" size={12} color="#3B82F6" />
                     <Text
                       style={{
                         marginLeft: 4,
                         fontSize: 12,
-                        fontWeight: '600',
-                        color: colors.textSecondary,
+                        fontWeight: '700',
+                        color: '#3B82F6',
                       }}
                     >
                       {post.commentsCount}
@@ -556,18 +612,44 @@ export default function UniqueProfileScreen() {
                 </View>
               </View>
               
+              {/* Enhanced Media Type Indicator */}
               {post.type === 'video' && (
                 <View
                   style={{
                     position: 'absolute',
                     top: 12,
                     right: 12,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    borderRadius: 12,
-                    padding: 4,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    borderRadius: 16,
+                    padding: 8,
+                    elevation: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
                   }}
                 >
-                  <Ionicons name="play" size={12} color="white" />
+                  <Ionicons name="play" size={14} color="white" />
+                </View>
+              )}
+              
+              {post.type === 'carousel' && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    right: 12,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    borderRadius: 16,
+                    padding: 8,
+                    elevation: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                  }}
+                >
+                  <Ionicons name="copy" size={14} color="white" />
                 </View>
               )}
             </TouchableOpacity>
@@ -582,7 +664,7 @@ export default function UniqueProfileScreen() {
     <SafeAreaView 
       style={{ 
         flex: 1, 
-        backgroundColor: colors.background,
+        backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC',
         paddingBottom: 100 // Add space for bottom tab bar
       }}
     >
@@ -592,464 +674,492 @@ export default function UniqueProfileScreen() {
         translucent
       />
       
-      {/* Modern Header */}
+      {/* Travel-Themed Header */}
       <View
         style={{
+          backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.96)' : 'rgba(255, 255, 255, 0.98)',
+          borderBottomWidth: 1.5,
+          borderBottomColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+          paddingTop: 16,
+          paddingBottom: 24,
+          paddingHorizontal: 24,
+          elevation: 4,
+          shadowColor: isDarkMode ? '#10B981' : '#059669',
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.2,
+          shadowRadius: 12,
+        }}
+      >
+        <View style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: 16,
-          backgroundColor: colors.background,
-        }}
-      >
-        <View>
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: '900',
-              color: colors.text,
-              letterSpacing: -1,
-              marginBottom: 4,
-            }}
-          >
-            Profile
-          </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              color: colors.textSecondary,
-              fontWeight: '500',
-            }}
-          >
-            Your travel journey
-          </Text>
-        </View>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity
-            onPress={showShareOptions}
-            style={{
-              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
-              borderRadius: 20,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)',
-            }}
-          >
-            <Ionicons name="share-social" size={22} color="#10B981" />
-          </TouchableOpacity>
+        }}>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <View style={{
+                width: 6,
+                height: 32,
+                backgroundColor: '#10B981',
+                borderRadius: 3,
+                marginRight: 12,
+                shadowColor: '#10B981',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.3,
+                shadowRadius: 2,
+              }} />
+              <Text
+                style={{
+                  fontSize: 28,
+                  fontWeight: '800',
+                  color: colors.text,
+                  letterSpacing: -0.8,
+                }}
+              >
+                Profile
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 15,
+                color: '#10B981',
+                fontWeight: '600',
+                marginLeft: 18,
+                opacity: 0.9,
+              }}
+            >
+              🌍 Your travel adventure starts here
+            </Text>
+          </View>
           
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/add-post')}
+            onPress={() => setShowActionDrawer(true)}
             style={{
-              backgroundColor: '#3B82F6',
-              borderRadius: 20,
-              padding: 14,
-              elevation: 8,
-              shadowColor: '#3B82F6',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
+              padding: 12,
             }}
           >
-            <Ionicons name="add" size={22} color="white" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            onPress={() => setShowSettings(!showSettings)}
-            style={{
-              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
-              borderRadius: 20,
-              padding: 14,
-              borderWidth: 1,
-              borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-            }}
-          >
-            <Ionicons name="menu" size={22} color="#3B82F6" />
+            <Ionicons name="menu" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={{ 
+          paddingBottom: 160,
+          paddingTop: 8,
+        }}
+        style={{
+          backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.02)' : 'rgba(248, 250, 252, 0.02)',
+        }}
       >
-        {/* Traveller Profile Card */}
+        {/* Professional Profile Card */}
         <View
           style={{
-            backgroundColor: colors.background,
-            marginHorizontal: 20,
-            paddingHorizontal: 20,
-            paddingVertical: 24,
-            marginBottom: 20,
+            backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            marginHorizontal: 16,
+            marginBottom: 24,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
-            elevation: 2,
-            shadowColor: '#3B82F6',
+            borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.12)' : 'rgba(59, 130, 246, 0.06)',
+            elevation: 8,
+            shadowColor: isDarkMode ? '#000' : '#3B82F6',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+          }}
+        >
+          <View style={{ padding: 20 }}>
+            {/* Profile Header */}
+            <View style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              marginBottom: 24,
+            }}>
+              {/* Profile Picture */}
+              <View style={{ marginRight: 20 }}>
+                <View
+                  style={{
+                    width: 85,
+                    height: 85,
+                    borderRadius: 42.5,
+                    backgroundColor: '#10B981',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderWidth: 3,
+                    borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+                    overflow: 'hidden',
+                    elevation: 3,
+                    shadowColor: '#10B981',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                  }}
+                >
+                  {user?.profilePicture ? (
+                    <Image
+                      source={{ uri: user.profilePicture }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Ionicons
+                      name="person"
+                      size={36}
+                      color="white"
+                    />
+                  )}
+                </View>
+                
+                {/* Status Indicator */}
+                <View style={{
+                  position: 'absolute',
+                  bottom: 4,
+                  right: 4,
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: profileData.statusColor,
+                  borderWidth: 2,
+                  borderColor: colors.background,
+                }} />
+                
+                {isAdmin && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: -2,
+                      right: -2,
+                      backgroundColor: '#F59E0B',
+                      borderRadius: 8,
+                      paddingHorizontal: 5,
+                      paddingVertical: 2,
+                      borderWidth: 1,
+                      borderColor: '#FCD34D',
+                      elevation: 2,
+                      shadowColor: '#F59E0B',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: 8,
+                        fontWeight: '900',
+                      }}
+                    >
+                      🌟 VIP
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* User Info */}
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: '800',
+                    color: colors.text,
+                    marginBottom: 6,
+                    letterSpacing: -0.3,
+                  }}
+                >
+                  {capitalize(user?.firstName || 'Travel')} {capitalize(user?.lastName || 'Explorer')}
+                </Text>
+                
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: colors.textSecondary,
+                    fontWeight: '500',
+                    marginBottom: 10,
+                  }}
+                >
+                  @{user?.firstName?.toLowerCase() || 'explorer'}
+                </Text>
+
+                {/* Status */}
+                <View style={{ 
+                  flexDirection: 'row', 
+                  alignItems: 'center',
+                  backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                  borderRadius: 8,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  alignSelf: 'flex-start',
+                }}>
+                  <View
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: profileData.statusColor,
+                      marginRight: 6,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: profileData.statusColor,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {profileData.travelStatus}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Travel Stats Section */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                paddingVertical: 20,
+                marginBottom: 20,
+              }}
+            >
+              <TouchableOpacity style={{ alignItems: 'center', flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: '900',
+                    color: colors.text,
+                    marginBottom: 4,
+                  }}
+                >
+                  {profileStats.postsCount || 0}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontWeight: '600',
+                  }}
+                >
+                  Posts
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{
+                width: 1,
+                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+                marginVertical: 8,
+              }} />
+
+              <TouchableOpacity style={{ alignItems: 'center', flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: '900',
+                    color: colors.text,
+                    marginBottom: 4,
+                  }}
+                >
+                  {profileStats.followersCount || 0}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontWeight: '600',
+                  }}
+                >
+                  Followers
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{
+                width: 1,
+                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+                marginVertical: 8,
+              }} />
+
+              <TouchableOpacity style={{ alignItems: 'center', flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 24,
+                    fontWeight: '900',
+                    color: colors.text,
+                    marginBottom: 4,
+                  }}
+                >
+                  {profileStats.followingCount || 0}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    fontWeight: '600',
+                  }}
+                >
+                  Following
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Travel Bio Section */}
+            <View style={{ 
+              marginBottom: 20,
+              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.03)' : 'rgba(16, 185, 129, 0.02)',
+              borderRadius: 12,
+              padding: 16,
+              borderLeftWidth: 3,
+              borderLeftColor: '#10B981',
+            }}>
+              <Text
+                style={{
+                  fontSize: 15,
+                  color: colors.text,
+                  lineHeight: 22,
+                  letterSpacing: 0.2,
+                  fontWeight: '500',
+                }}
+              >
+                {profileData.bio}
+              </Text>
+            </View>
+
+            {/* Travel Achievement Badges */}
+            <View style={{ 
+              flexDirection: 'row', 
+              flexWrap: 'wrap', 
+              gap: 10, 
+              marginBottom: 24,
+              paddingHorizontal: 2,
+            }}>
+              {profileData.badges.map((badgeName: string, index: number) => {
+                const badge = availableBadges.find(b => b.name === badgeName);
+                if (!badge) return null;
+                
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      backgroundColor: isDarkMode 
+                        ? `${badge.color}15` 
+                        : `${badge.color}10`,
+                      borderRadius: 12,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Ionicons 
+                      name={badge.icon as any} 
+                      size={12} 
+                      color={badge.color} 
+                      style={{ marginRight: 4 }} 
+                    />
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: badge.color,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {badge.name}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+
+
+          </View>
+        </View>
+
+        {/* Professional Content Tabs */}
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginBottom: 20,
+            backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(248, 250, 252, 0.8)',
+            borderRadius: 24,
+            padding: 8,
+            borderWidth: 1,
+            borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)',
+            elevation: 4,
+            shadowColor: isDarkMode ? '#000' : '#3B82F6',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
             shadowRadius: 8,
           }}
         >
-          {/* Profile Info - Left Aligned Layout */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 24 }}>
-            {/* Profile Picture - Left Side */}
-            <View style={{ marginRight: 16 }}>
-              <View
+          <View style={{ flexDirection: 'row' }}>
+            {[
+              { key: 'posts', label: 'Posts', icon: 'grid' },
+              { key: 'stories', label: 'Stories', icon: 'play-circle' },
+              { key: 'saved', label: 'Saved', icon: 'bookmark' }
+            ].map((tab, index) => (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => setSelectedTab(tab.key)}
                 style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  backgroundColor: '#3B82F6',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderWidth: 3,
-                  borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-                  elevation: 4,
-                  shadowColor: '#3B82F6',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 6,
-                  overflow: 'hidden',
-                }}
-              >
-                {user?.profilePicture ? (
-                  <Image
-                    source={{ uri: user.profilePicture }}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <Ionicons
-                    name="airplane"
-                    size={32}
-                    color="white"
-                  />
-                )}
-              </View>
-              
-              {isAdmin && (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -4,
-                    backgroundColor: '#F59E0B',
-                    borderRadius: 8,
-                    paddingHorizontal: 4,
-                    paddingVertical: 2,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontSize: 8,
-                      fontWeight: '800',
-                    }}
-                  >
-                    ADMIN
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Name and Info - Right Side */}
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <Text
-                style={{
-                  fontSize: 22,
-                  fontWeight: '800',
-                  color: colors.text,
-                  marginBottom: 4,
-                  letterSpacing: -0.5,
-                }}
-              >
-                {capitalize(user?.firstName || '')} {capitalize(user?.lastName || '')}
-              </Text>
-              
-              <View
-                style={{
-                  backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
-                  borderRadius: 12,
+                  flex: 1,
+                  paddingVertical: 16,
                   paddingHorizontal: 12,
-                  paddingVertical: 4,
-                  alignSelf: 'flex-start',
-                  marginBottom: 8,
+                  alignItems: 'center',
+                  backgroundColor: selectedTab === tab.key 
+                    ? '#10B981'
+                    : 'transparent',
+                  borderRadius: 18,
+                  marginHorizontal: 4,
+                  elevation: selectedTab === tab.key ? 6 : 0,
+                  shadowColor: '#10B981',
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: selectedTab === tab.key ? 0.4 : 0,
+                  shadowRadius: 6,
+                  borderWidth: selectedTab === tab.key ? 1 : 0,
+                  borderColor: selectedTab === tab.key ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: '#3B82F6',
-                    fontWeight: '600',
-                  }}
-                >
-                  @{user?.firstName?.toLowerCase() || 'wanderer'}
-                </Text>
-              </View>
-
-              {/* Dynamic Travel Status */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: profileData.statusColor,
-                    marginRight: 8,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: profileData.statusColor,
-                    fontWeight: '600',
-                  }}
-                >
-                  {profileData.travelStatus}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Dynamic Travel Bio */}
-          <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontSize: 15,
-                color: colors.textSecondary,
-                lineHeight: 20,
-                textAlign: 'left',
-              }}
-            >
-              {profileData.bio}
-            </Text>
-          </View>
-
-          {/* Dynamic Travel Badges */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-            {profileData.badges.map((badgeName: string, index: number) => {
-              const badge = availableBadges.find(b => b.name === badgeName);
-              if (!badge) return null;
-              
-              return (
-                <View
-                  key={index}
-                  style={{
-                    backgroundColor: isDarkMode 
-                      ? `${badge.color}25` 
-                      : `${badge.color}15`,
-                    borderRadius: 12,
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
+                <View style={{ 
+                  flexDirection: 'row', 
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
                   <Ionicons 
-                    name={badge.icon as any} 
-                    size={12} 
-                    color={badge.color} 
-                    style={{ marginRight: 4 }} 
+                    name={tab.icon as any} 
+                    size={18} 
+                    color={selectedTab === tab.key ? 'white' : colors.textSecondary}
+                    style={{ marginRight: 6 }}
                   />
                   <Text
                     style={{
-                      fontSize: 11,
-                      color: badge.color,
-                      fontWeight: '600',
+                      fontSize: 15,
+                      fontWeight: selectedTab === tab.key ? '800' : '600',
+                      color: selectedTab === tab.key ? 'white' : colors.textSecondary,
+                      letterSpacing: 0.3,
                     }}
                   >
-                    {badge.name}
+                    {tab.label}
                   </Text>
                 </View>
-              );
-            })}
+                
+                {/* Active indicator */}
+                {selectedTab === tab.key && (
+                  <View style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    left: '50%',
+                    marginLeft: -8,
+                    width: 16,
+                    height: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                    borderRadius: 1,
+                  }} />
+                )}
+              </TouchableOpacity>
+            ))}
           </View>
-
-          {/* Instagram Style Stats */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              paddingHorizontal: 20,
-              paddingVertical: 20,
-              marginBottom: 8,
-            }}
-          >
-            <TouchableOpacity style={{ alignItems: 'center' }}>
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: '800',
-                  color: colors.text,
-                  marginBottom: 2,
-                }}
-              >
-                {profileStats.postsCount}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: colors.textSecondary,
-                  fontWeight: '400',
-                }}
-              >
-                Posts
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ alignItems: 'center' }}>
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: '800',
-                  color: colors.text,
-                  marginBottom: 2,
-                }}
-              >
-                {profileStats.followersCount}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: colors.textSecondary,
-                  fontWeight: '400',
-                }}
-              >
-                Followers
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{ alignItems: 'center' }}>
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: '800',
-                  color: colors.text,
-                  marginBottom: 2,
-                }}
-              >
-                {profileStats.followingCount}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: colors.textSecondary,
-                  fontWeight: '400',
-                }}
-              >
-                Following
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Action Buttons */}
-          <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 8 }}>
-            <TouchableOpacity
-              onPress={() => setShowEditProfile(true)}
-              style={{
-                flex: 1,
-                backgroundColor: '#3B82F6',
-                borderRadius: 25,
-                paddingVertical: 16,
-                alignItems: 'center',
-                elevation: 4,
-                shadowColor: '#3B82F6',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-              }}
-            >
-              <Text
-                style={{
-                  color: 'white',
-                  fontSize: 16,
-                  fontWeight: '700',
-                }}
-              >
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              onPress={showShareOptions}
-              style={{
-                flex: 1,
-                backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
-                borderRadius: 25,
-                paddingVertical: 16,
-                alignItems: 'center',
-                borderWidth: 1.5,
-                borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.3)',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="share-social" size={18} color="#10B981" style={{ marginRight: 6 }} />
-                <Text
-                  style={{
-                    color: '#10B981',
-                    fontSize: 16,
-                    fontWeight: '700',
-                  }}
-                >
-                  Share Profile
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Content Tabs */}
-        <View
-          style={{
-            flexDirection: 'row',
-            paddingHorizontal: 20,
-            marginBottom: 24,
-            backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.3)' : 'rgba(248, 250, 252, 0.5)',
-            borderRadius: 20,
-            padding: 6,
-            marginHorizontal: 20,
-          }}
-        >
-          {['posts', 'stories', 'saved'].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setSelectedTab(tab)}
-              style={{
-                flex: 1,
-                paddingVertical: 14,
-                alignItems: 'center',
-                backgroundColor: selectedTab === tab 
-                  ? '#3B82F6'
-                  : 'transparent',
-                borderRadius: 16,
-                marginHorizontal: 2,
-                elevation: selectedTab === tab ? 4 : 0,
-                shadowColor: '#3B82F6',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: selectedTab === tab ? 0.3 : 0,
-                shadowRadius: 4,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: selectedTab === tab ? '800' : '600',
-                  color: selectedTab === tab ? 'white' : colors.textSecondary,
-                  textTransform: 'capitalize',
-                  textAlign: 'center',
-                }}
-              >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
         </View>
 
         {/* Posts Grid */}
@@ -1531,6 +1641,397 @@ export default function UniqueProfileScreen() {
               </View>
             </ScrollView>
           </BlurView>
+        </View>
+      )}
+
+      {/* Professional Action Drawer */}
+      {showActionDrawer && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            zIndex: 1000,
+          }}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            onPress={() => setShowActionDrawer(false)}
+          />
+          
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: 280,
+              backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+              borderTopRightRadius: 24,
+              borderBottomRightRadius: 24,
+            }}
+          >
+            <BlurView
+              intensity={100}
+              tint={isDarkMode ? 'dark' : 'light'}
+              style={{
+                flex: 1,
+                borderTopRightRadius: 24,
+                borderBottomRightRadius: 24,
+                overflow: 'hidden',
+              }}
+            >
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Drawer Header */}
+                <View style={{
+                  paddingHorizontal: 24,
+                  paddingVertical: 20,
+                  paddingTop: 60,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={{
+                      fontSize: 22,
+                      fontWeight: '800',
+                      color: colors.text,
+                    }}>
+                      Quick Actions
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowActionDrawer(false)}
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        borderRadius: 12,
+                        padding: 8,
+                      }}
+                    >
+                      <Ionicons name="close" size={20} color={colors.text} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Action Items */}
+                <View style={{ paddingVertical: 20 }}>
+                  {/* Edit Profile */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      setShowEditProfile(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                      backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#3B82F6',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="create" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        Edit Profile
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Update your travel profile
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Add Post */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      router.push('/(tabs)/add-post');
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                      backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#10B981',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="add" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        Add Post
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Share your travel moments
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Add Story */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      router.push('/(tabs)/add-story');
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                      backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.05)',
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#F59E0B',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="play-circle" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        Add Story
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Share quick travel updates
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Share Profile */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      showShareOptions();
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                      backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)',
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#8B5CF6',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="share-social" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        Share Profile
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Share your travel journey
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Divider */}
+                  <View style={{
+                    height: 1,
+                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    marginVertical: 16,
+                    marginHorizontal: 24,
+                  }} />
+
+                  {/* Theme Toggle */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      toggleTheme();
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: isDarkMode ? '#FCD34D' : '#1F2937',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name={isDarkMode ? 'sunny' : 'moon'} size={20} color={isDarkMode ? '#000' : '#FFF'} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Switch theme preference
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Settings */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      setShowSettings(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#6B7280',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="settings" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        Settings
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        App preferences & more
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Logout */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      logout();
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 20,
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#EF4444',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="log-out" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: '#EF4444',
+                        marginBottom: 2,
+                      }}>
+                        Sign Out
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        Logout from your account
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </BlurView>
+          </View>
         </View>
       )}
 
