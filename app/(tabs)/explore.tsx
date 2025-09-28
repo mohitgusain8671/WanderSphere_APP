@@ -471,16 +471,15 @@ export default function ExploreScreen() {
       />
 
       {/* Itinerary List */}
-      {showItineraryList && (
-        <ItineraryList
-          onClose={() => setShowItineraryList(false)}
-          onSelectItinerary={(itinerary) => {
-            setSelectedItinerary(itinerary);
-            setShowItineraryList(false);
-            setShowItineraryDisplay(true);
-          }}
-        />
-      )}
+      <ItineraryList
+        visible={showItineraryList}
+        onClose={() => setShowItineraryList(false)}
+        onSelectItinerary={(itinerary) => {
+          setSelectedItinerary(itinerary);
+          setShowItineraryList(false);
+          setShowItineraryDisplay(true);
+        }}
+      />
 
       {/* Itinerary Display */}
       {showItineraryDisplay && selectedItinerary && (

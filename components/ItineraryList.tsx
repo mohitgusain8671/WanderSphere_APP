@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,40 +10,36 @@ import {
   RefreshControl,
   Alert,
   Image,
+  Modal,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
 import { format } from 'date-fns';
+import { COLORS } from '../utils/constants';
+import { shallow } from 'zustand/shallow'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ItineraryListProps {
+  visible: boolean;
   onSelectItinerary: (itinerary: any) => void;
   onClose: () => void;
 }
 
-const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClose }) => {
-  const { theme } = useTheme();
+const ItineraryList: React.FC<ItineraryListProps> = ({ visible, onSelectItinerary, onClose }) => {
+  const { colors, isDarkMode } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBy, setFilterBy] = useState('all'); // all, recent, favorite
   const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedRef = useRef(false);
   
   const {
     itineraries,
-    isLoading,
+    isItineraryLoading,
     getUserItineraries,
     deleteItinerary,
-  } = useAppStore(state => ({
-    itineraries: state.itineraries,
-    isLoading: state.isLoading,
-    getUserItineraries: state.getUserItineraries,
-    deleteItinerary: state.deleteItinerary,
-  }));
-
-  useEffect(() => {
-    loadItineraries();
-  }, []);
+  } = useAppStore();
 
   const loadItineraries = async () => {
     try {
@@ -52,6 +48,13 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
       Alert.alert('Error', 'Failed to load itineraries. Please try again.');
     }
   };
+
+  useEffect(() => {
+    if (visible && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      loadItineraries();
+    }
+  }, [visible]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -81,7 +84,7 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
     );
   };
 
-  const filteredItineraries = itineraries.filter((itinerary: any) => {
+  const filteredItineraries = (itineraries || []).filter((itinerary: any) => {
     const matchesSearch = 
       itinerary.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
       itinerary.title?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -105,16 +108,16 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
   const renderItineraryCard = (itinerary: any) => (
     <TouchableOpacity
       key={itinerary._id}
-      style={[styles.itineraryCard, { backgroundColor: theme.cardBackground }]}
+      style={[styles.itineraryCard, { backgroundColor: colors.card }]}
       onPress={() => onSelectItinerary(itinerary)}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleSection}>
-          <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
+          <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
             {itinerary.title || itinerary.destination}
           </Text>
-          <Text style={[styles.cardDestination, { color: theme.textSecondary }]}>
+          <Text style={[styles.cardDestination, { color: colors.textSecondary }]}>
             {itinerary.destination}
           </Text>
         </View>
@@ -122,28 +125,28 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
           style={styles.deleteButton}
           onPress={() => handleDeleteItinerary(itinerary._id)}
         >
-          <MaterialIcons name="delete-outline" size={20} color={theme.textSecondary} />
+          <MaterialIcons name="delete-outline" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.cardDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="calendar-outline" size={16} color={theme.primary} />
-          <Text style={[styles.detailText, { color: theme.textSecondary }]}>
+          <Ionicons name="calendar-outline" size={16} color={COLORS.primary} />
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
             {format(new Date(itinerary.startDate), 'MMM dd')} - {format(new Date(itinerary.endDate), 'MMM dd, yyyy')}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="time-outline" size={16} color={theme.primary} />
-          <Text style={[styles.detailText, { color: theme.textSecondary }]}>
+          <Ionicons name="time-outline" size={16} color={COLORS.primary} />
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
             {itinerary.duration} days
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Ionicons name="wallet-outline" size={16} color={theme.primary} />
-          <Text style={[styles.detailText, { color: theme.textSecondary }]}>
+          <Ionicons name="wallet-outline" size={16} color={COLORS.primary} />
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
             ${itinerary.budget || 'N/A'} budget
           </Text>
         </View>
@@ -156,24 +159,24 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
               key={star}
               name={star <= (itinerary.rating || 0) ? "star" : "star-outline"}
               size={14}
-              color={star <= (itinerary.rating || 0) ? "#FFD700" : theme.textSecondary}
+              color={star <= (itinerary.rating || 0) ? "#FFD700" : colors.textSecondary}
             />
           ))}
           {itinerary.rating && (
-            <Text style={[styles.ratingText, { color: theme.textSecondary }]}>
+            <Text style={[styles.ratingText, { color: colors.textSecondary }]}>
               ({itinerary.rating})
             </Text>
           )}
         </View>
         
-        <Text style={[styles.createdDate, { color: theme.textSecondary }]}>
+        <Text style={[styles.createdDate, { color: colors.textSecondary }]}>
           Created {format(new Date(itinerary.createdAt), 'MMM dd, yyyy')}
         </Text>
       </View>
 
       {itinerary.generatedPlan?.highlights && (
         <View style={styles.highlightsSection}>
-          <Text style={[styles.highlightsText, { color: theme.textSecondary }]} numberOfLines={2}>
+          <Text style={[styles.highlightsText, { color: colors.textSecondary }]} numberOfLines={2}>
             {itinerary.generatedPlan.highlights.slice(0, 2).join(' • ')}
           </Text>
         </View>
@@ -183,11 +186,11 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="map-outline" size={80} color={theme.textSecondary} />
-      <Text style={[styles.emptyTitle, { color: theme.text }]}>
+      <Ionicons name="map-outline" size={80} color={colors.textSecondary} />
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
         No Itineraries Yet
       </Text>
-      <Text style={[styles.emptyDescription, { color: theme.textSecondary }]}>
+      <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
         Start planning your first adventure by generating a new itinerary!
       </Text>
     </View>
@@ -199,8 +202,8 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
       style={[
         styles.filterButton,
         {
-          backgroundColor: filterBy === filter ? theme.primary : theme.cardBackground,
-          borderColor: theme.border,
+          backgroundColor: filterBy === filter ? COLORS.primary : colors.card,
+          borderColor: colors.border,
         }
       ]}
       onPress={() => setFilterBy(filter)}
@@ -208,12 +211,12 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
       <Ionicons
         name={icon as any}
         size={16}
-        color={filterBy === filter ? '#fff' : theme.textSecondary}
+        color={filterBy === filter ? '#fff' : colors.textSecondary}
       />
       <Text
         style={[
           styles.filterButtonText,
-          { color: filterBy === filter ? '#fff' : theme.textSecondary }
+          { color: filterBy === filter ? '#fff' : colors.textSecondary }
         ]}
       >
         {label}
@@ -222,31 +225,37 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close" size={24} color={theme.text} />
+          <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
           My Itineraries
         </Text>
         <View style={styles.placeholder} />
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: theme.cardBackground }]}>
-        <Ionicons name="search" size={20} color={theme.textSecondary} />
+      <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+        <Ionicons name="search" size={20} color={colors.textSecondary} />
         <TextInput
-          style={[styles.searchInput, { color: theme.text }]}
+          style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search destinations..."
-          placeholderTextColor={theme.textSecondary}
+          placeholderTextColor={colors.textSecondary}
           value={searchTerm}
           onChangeText={setSearchTerm}
         />
         {searchTerm.length > 0 && (
           <TouchableOpacity onPress={() => setSearchTerm('')}>
-            <Ionicons name="close-circle" size={20} color={theme.textSecondary} />
+            <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -260,7 +269,7 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
 
       {/* Results Count */}
       <View style={styles.resultsContainer}>
-        <Text style={[styles.resultsText, { color: theme.textSecondary }]}>
+        <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
           {filteredItineraries.length} itinerar{filteredItineraries.length !== 1 ? 'ies' : 'y'} found
         </Text>
       </View>
@@ -273,14 +282,14 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[theme.primary]}
-            tintColor={theme.primary}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
           />
         }
       >
-        {isLoading && itineraries.length === 0 ? (
+        {isItineraryLoading && (!itineraries || itineraries.length === 0) ? (
           <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
               Loading itineraries...
             </Text>
           </View>
@@ -292,7 +301,8 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ onSelectItinerary, onClos
           </View>
         )}
       </ScrollView>
-    </View>
+      </View>
+    </Modal>
   );
 };
 
