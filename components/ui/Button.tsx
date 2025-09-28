@@ -2,6 +2,10 @@ import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { COLORS } from '../../utils/constants';
+import { 
+  wp, hp, spacing, typography, buttonHeights, 
+  borderRadius, deviceResponsive 
+} from '../../utils/responsive';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -24,58 +28,150 @@ export const Button: React.FC<ButtonProps> = ({
   const { colors, isDarkMode } = useTheme();
 
   const getButtonStyles = () => {
-    const baseStyles = 'rounded-lg flex-row items-center justify-center';
+    // Responsive padding and dimensions
     const sizeStyles = {
-      sm: 'px-3 py-2',
-      md: 'px-4 py-3',
-      lg: 'px-6 py-4'
+      sm: {
+        paddingHorizontal: deviceResponsive({
+          small: spacing.sm,
+          medium: spacing.md,
+          large: spacing.md,
+          tablet: spacing.lg,
+          default: spacing.md
+        }),
+        height: buttonHeights.sm,
+      },
+      md: {
+        paddingHorizontal: deviceResponsive({
+          small: spacing.md,
+          medium: spacing.lg,
+          large: spacing.xl,
+          tablet: spacing.xxl,
+          default: spacing.lg
+        }),
+        height: buttonHeights.md,
+      },
+      lg: {
+        paddingHorizontal: deviceResponsive({
+          small: spacing.lg,
+          medium: spacing.xl,
+          large: spacing.xxl,
+          tablet: wp(8),
+          default: spacing.xl
+        }),
+        height: buttonHeights.lg,
+      }
     };
     
     const variantStyles = {
-      primary: `bg-blue-600 ${isDarkMode ? 'bg-blue-500' : 'bg-blue-600'}`,
-      secondary: `bg-green-600 ${isDarkMode ? 'bg-green-500' : 'bg-green-600'}`,
-      outline: `border-2 ${isDarkMode ? 'border-gray-600 bg-transparent' : 'border-gray-300 bg-transparent'}`,
-      ghost: 'bg-transparent'
+      primary: {
+        backgroundColor: isDarkMode ? '#3B82F6' : '#2563EB',
+      },
+      secondary: {
+        backgroundColor: isDarkMode ? '#10B981' : '#059669',
+      },
+      outline: {
+        backgroundColor: 'transparent',
+        borderWidth: deviceResponsive({
+          small: 1.5,
+          medium: 2,
+          large: 2,
+          tablet: 2.5,
+          default: 2
+        }),
+        borderColor: isDarkMode ? colors.border : '#D1D5DB',
+      },
+      ghost: {
+        backgroundColor: 'transparent',
+      }
     };
 
-    const widthStyle = fullWidth ? 'w-full' : '';
-    const disabledStyle = (disabled || loading) ? 'opacity-50' : '';
-
-    return `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${widthStyle} ${disabledStyle}`;
+    return {
+      ...sizeStyles[size],
+      ...variantStyles[variant],
+      borderRadius: borderRadius.md,
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      width: fullWidth ? '100%' as const : undefined,
+      opacity: (disabled || loading) ? 0.6 : 1,
+      shadowColor: '#000',
+      shadowOffset: variant !== 'ghost' && variant !== 'outline' ? { width: 0, height: 2 } : { width: 0, height: 0 },
+      shadowOpacity: variant !== 'ghost' && variant !== 'outline' ? 0.1 : 0,
+      shadowRadius: variant !== 'ghost' && variant !== 'outline' ? 3 : 0,
+      elevation: variant !== 'ghost' && variant !== 'outline' ? 2 : 0,
+    };
   };
 
   const getTextStyles = () => {
-    const sizeStyles = {
-      sm: 'text-sm',
-      md: 'text-base',
-      lg: 'text-lg'
+    const sizeTextStyles = {
+      sm: {
+        fontSize: deviceResponsive({
+          small: typography.caption.fontSize,
+          medium: typography.bodySmall.fontSize,
+          large: typography.bodySmall.fontSize,
+          tablet: typography.body.fontSize,
+          default: typography.bodySmall.fontSize
+        }),
+      },
+      md: {
+        fontSize: typography.button.fontSize,
+      },
+      lg: {
+        fontSize: deviceResponsive({
+          small: typography.body.fontSize,
+          medium: typography.button.fontSize + 2,
+          large: typography.button.fontSize + 4,
+          tablet: typography.h3.fontSize,
+          default: typography.button.fontSize + 2
+        }),
+      }
     };
 
-    const variantStyles = {
-      primary: 'text-white font-semibold',
-      secondary: 'text-white font-semibold',
-      outline: `font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`,
-      ghost: `font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`
+    const variantTextStyles = {
+      primary: {
+        color: '#FFFFFF',
+        fontWeight: '600' as const,
+      },
+      secondary: {
+        color: '#FFFFFF',
+        fontWeight: '600' as const,
+      },
+      outline: {
+        color: isDarkMode ? colors.text : '#374151',
+        fontWeight: '600' as const,
+      },
+      ghost: {
+        color: isDarkMode ? '#60A5FA' : '#2563EB',
+        fontWeight: '500' as const,
+      }
     };
 
-    return `${sizeStyles[size]} ${variantStyles[variant]}`;
+    return {
+      ...sizeTextStyles[size],
+      ...variantTextStyles[variant],
+    };
   };
 
   return (
     <TouchableOpacity
-      className={getButtonStyles()}
+      style={[getButtonStyles(), style]}
       disabled={disabled || loading}
-      style={style}
       {...props}
     >
       {loading && (
         <ActivityIndicator 
-          size="small" 
+          size={deviceResponsive({
+            small: 'small',
+            medium: 'small',
+            large: 'small', 
+            tablet: 'small',
+            default: 'small'
+          })} 
           color={variant === 'outline' || variant === 'ghost' ? COLORS.primary : 'white'} 
-          className="mr-2"
+          style={{ marginRight: spacing.sm }}
         />
       )}
-      <Text className={getTextStyles()}>
+      <Text style={getTextStyles()}>
         {title}
       </Text>
     </TouchableOpacity>

@@ -10,6 +10,10 @@ import { Input } from '../../components/ui/Input';
 import { APP_NAME } from '../../utils/constants';
 import { validateEmail, validateForm } from '../../utils/validation';
 import { useToast } from '../../contexts/ToastContext';
+import { 
+  wp, hp, spacing, typography, layout, iconSizes, 
+  deviceResponsive, isSmallDevice 
+} from '../../utils/responsive';
 
 
 export default function LoginScreen() {
@@ -68,25 +72,54 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView 
-      className="flex-1"
-      style={{ backgroundColor: colors.background }}
+      style={{ 
+        flex: 1, 
+        backgroundColor: colors.background 
+      }}
     >
       <ScrollView 
-        className="flex-1 px-6"
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: layout.container.paddingHorizontal,
+          paddingBottom: spacing.xl,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View className="flex-row items-center justify-between pt-6 pb-12">
-          <View className="flex-1">
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingTop: deviceResponsive({
+            small: spacing.lg,
+            medium: spacing.xl,
+            large: spacing.xxl,
+            tablet: wp(8),
+            default: spacing.xl
+          }),
+          paddingBottom: deviceResponsive({
+            small: spacing.xl,
+            medium: wp(12),
+            large: wp(15),
+            tablet: wp(18),
+            default: wp(12)
+          })
+        }}>
+          <View style={{ flex: 1 }}>
             <Text 
-              className="text-3xl font-bold mb-2"
-              style={{ color: colors.text }}
+              style={{ 
+                ...typography.h1,
+                color: colors.text,
+                marginBottom: spacing.sm
+              }}
             >
               Welcome Back
             </Text>
             <Text 
-              className="text-lg"
-              style={{ color: colors.textSecondary }}
+              style={{ 
+                ...typography.body,
+                color: colors.textSecondary 
+              }}
             >
               Sign in to {APP_NAME}
             </Text>
@@ -94,35 +127,89 @@ export default function LoginScreen() {
           
           <TouchableOpacity 
             onPress={toggleTheme}
-            className="p-3 rounded-full ml-4"
-            style={{ backgroundColor: colors.surface }}
+            style={{
+              padding: spacing.md,
+              borderRadius: wp(50),
+              marginLeft: spacing.md,
+              backgroundColor: colors.surface,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
           >
             <Ionicons 
               name={isDarkMode ? 'sunny' : 'moon'} 
-              size={24} 
+              size={iconSizes.md} 
               color={colors.text}
             />
           </TouchableOpacity>
         </View>
 
         {/* Travel Icon */}
-        <View className="items-center mb-12">
+        <View style={{
+          alignItems: 'center',
+          marginBottom: deviceResponsive({
+            small: wp(10),
+            medium: wp(12),
+            large: wp(15),
+            tablet: wp(18),
+            default: wp(12)
+          })
+        }}>
           <View 
-            className="w-24 h-24 rounded-full items-center justify-center shadow-lg"
-            style={{ backgroundColor: colors.surface }}
+            style={{
+              width: deviceResponsive({
+                small: wp(20),
+                medium: wp(24),
+                large: wp(26),
+                tablet: wp(20),
+                default: wp(24)
+              }),
+              height: deviceResponsive({
+                small: wp(20),
+                medium: wp(24),
+                large: wp(26),
+                tablet: wp(20),
+                default: wp(24)
+              }),
+              borderRadius: wp(50),
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.surface,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
           >
-            <Ionicons name="airplane" size={48} color="#3B82F6" />
+            <Ionicons 
+              name="airplane" 
+              size={deviceResponsive({
+                small: iconSizes.xl,
+                medium: iconSizes.xxl + 8,
+                large: iconSizes.xxl + 16,
+                tablet: iconSizes.xxl + 12,
+                default: iconSizes.xxl + 8
+              })} 
+              color="#3B82F6" 
+            />
           </View>
           <Text 
-            className="text-sm mt-3 font-medium"
-            style={{ color: colors.textSecondary }}
+            style={{
+              ...typography.bodySmall,
+              marginTop: spacing.sm,
+              color: colors.textSecondary
+            }}
           >
             Your travel companion
           </Text>
         </View>
 
         {/* Login Form */}
-        <View className="mb-6">
+        <View style={{ marginBottom: spacing.xl }}>
           <Input
             label="Email"
             placeholder="Enter your email"
@@ -146,9 +233,18 @@ export default function LoginScreen() {
 
           <TouchableOpacity 
             onPress={() => router.push('/(auth)/forgot-password')}
-            className="self-end mb-6"
+            style={{
+              alignSelf: 'flex-end',
+              marginBottom: spacing.xl,
+              paddingVertical: spacing.sm,
+              paddingHorizontal: spacing.xs
+            }}
           >
-            <Text className="text-blue-600 font-medium">
+            <Text style={{
+              ...typography.bodySmall,
+              color: '#3B82F6',
+              fontWeight: '600'
+            }}>
               Forgot Password?
             </Text>
           </TouchableOpacity>
@@ -162,20 +258,33 @@ export default function LoginScreen() {
         </View>
 
         {/* Divider */}
-        <View className="flex-row items-center mb-6">
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: spacing.xl
+        }}>
           <View 
-            className="flex-1 h-px"
-            style={{ backgroundColor: colors.border }}
+            style={{
+              flex: 1,
+              height: 1,
+              backgroundColor: colors.border
+            }}
           />
           <Text 
-            className="mx-4 text-sm"
-            style={{ color: colors.textSecondary }}
+            style={{
+              ...typography.bodySmall,
+              marginHorizontal: spacing.md,
+              color: colors.textSecondary
+            }}
           >
             Don't have an account?
           </Text>
           <View 
-            className="flex-1 h-px"
-            style={{ backgroundColor: colors.border }}
+            style={{
+              flex: 1,
+              height: 1,
+              backgroundColor: colors.border
+            }}
           />
         </View>
 
@@ -189,8 +298,21 @@ export default function LoginScreen() {
 
         {/* Error Message */}
         {error && (
-          <View className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
-            <Text className="text-red-600 text-center">{error}</Text>
+          <View style={{
+            marginTop: spacing.lg,
+            padding: spacing.md,
+            borderRadius: layout.card.borderRadius,
+            backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2',
+            borderWidth: 1,
+            borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FECACA'
+          }}>
+            <Text style={{
+              ...typography.bodySmall,
+              color: '#EF4444',
+              textAlign: 'center'
+            }}>
+              {error}
+            </Text>
           </View>
         )}
       </ScrollView>
