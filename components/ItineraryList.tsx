@@ -17,7 +17,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
 import { format } from 'date-fns';
 import { COLORS } from '../utils/constants';
-import { shallow } from 'zustand/shallow'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -34,12 +33,14 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ visible, onSelectItinerar
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedRef = useRef(false);
   
-  const {
-    itineraries,
-    isItineraryLoading,
-    getUserItineraries,
-    deleteItinerary,
-  } = useAppStore();
+  // Use proper Zustand selectors to avoid infinite loop
+  const itineraries = useAppStore(state => state.itineraries || []);
+  const isItineraryLoading = useAppStore(state => state.isItineraryLoading || false);
+  const getUserItineraries = useAppStore(state => state.getUserItineraries);
+  const getItineraryById = useAppStore(state => state.getItineraryById);
+  const deleteItinerary = useAppStore(state => state.deleteItinerary);
+  
+  const [fetchingItineraryId, setFetchingItineraryId] = useState<string | null>(null);
 
   const loadItineraries = async () => {
     try {
@@ -105,12 +106,36 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ visible, onSelectItinerar
     return matchesSearch && matchesFilter();
   });
 
+  const handleItineraryPress = async (itinerary: any) => {
+    try {
+      setFetchingItineraryId(itinerary.id);
+      const result = await getItineraryById(itinerary.id);
+      
+      if (result.success) {
+        onSelectItinerary(result.data);
+      } else {
+        Alert.alert('Error', 'Failed to load itinerary details. Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load itinerary details. Please try again.');
+    } finally {
+      setFetchingItineraryId(null);
+    }
+  };
+
   const renderItineraryCard = (itinerary: any) => (
     <TouchableOpacity
       key={itinerary._id}
-      style={[styles.itineraryCard, { backgroundColor: colors.card }]}
-      onPress={() => onSelectItinerary(itinerary)}
+      style={[
+        styles.itineraryCard, 
+        { 
+          backgroundColor: colors.card,
+          opacity: fetchingItineraryId === itinerary._id ? 0.6 : 1
+        }
+      ]}
+      onPress={() => handleItineraryPress(itinerary)}
       activeOpacity={0.7}
+      disabled={fetchingItineraryId === itinerary._id}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleSection}>
@@ -121,12 +146,18 @@ const ItineraryList: React.FC<ItineraryListProps> = ({ visible, onSelectItinerar
             {itinerary.destination}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteItinerary(itinerary._id)}
-        >
-          <MaterialIcons name="delete-outline" size={20} color={colors.textSecondary} />
-        </TouchableOpacity>
+        {fetchingItineraryId === itinerary._id ? (
+          <View style={styles.deleteButton}>
+            <Text style={{ fontSize: 12, color: colors.textSecondary }}>Loading...</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteItinerary(itinerary._id)}
+          >
+            <MaterialIcons name="delete-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.cardDetails}>

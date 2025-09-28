@@ -30,6 +30,7 @@ export default function ExploreScreen() {
   const [showItineraryList, setShowItineraryList] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<any>(null);
   const [showItineraryDisplay, setShowItineraryDisplay] = useState(false);
+  const [isLoadingItinerary, setIsLoadingItinerary] = useState(false);
 
   // Load wanderlust data on component mount
   useEffect(() => {
