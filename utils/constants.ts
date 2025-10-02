@@ -1,5 +1,7 @@
 // API Configuration
-export const HOST = process.env.EXPO_PUBLIC_API_HOST || 'http://localhost:5000';
+import Constants from 'expo-constants';
+
+export const HOST = Constants.expoConfig?.extra?.apiHost || 'http://localhost:5000';
 export const API_BASE_URL = `${HOST}/api`;
 
 export const AUTH_ROUTES = {
