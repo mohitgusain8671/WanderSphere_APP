@@ -7,6 +7,7 @@ import { InfiniteScrollView } from '../../components/InfiniteScrollView';
 import { SinglePostView } from '../../components/SinglePostView';
 import { StoriesBar } from '../../components/StoriesBar';
 import { StoryViewer } from '../../components/StoryViewer';
+import { UserProfileView } from '../../components/UserProfileView';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 
@@ -18,6 +19,8 @@ export default function HomeScreen() {
   const [showPostModal, setShowPostModal] = useState(false);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useEffect(() => {
     loadStories();
@@ -55,7 +58,8 @@ export default function HomeScreen() {
   };
 
   const handleUserPress = (userId: string) => {
-    console.log('View user profile:', userId);
+    setSelectedUserId(userId);
+    setShowUserProfile(true);
   };
 
   const renderHeader = () => (
@@ -251,6 +255,16 @@ export default function HomeScreen() {
         initialGroupIndex={selectedStoryGroupIndex}
         onClose={() => setShowStoryViewer(false)}
         onUserPress={handleUserPress}
+      />
+
+      {/* User Profile View */}
+      <UserProfileView
+        visible={showUserProfile}
+        userId={selectedUserId}
+        onClose={() => {
+          setShowUserProfile(false);
+          setSelectedUserId('');
+        }}
       />
     </SafeAreaView>
   );

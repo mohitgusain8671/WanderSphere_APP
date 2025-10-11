@@ -145,6 +145,16 @@ export const USER_ROLES = {
     ADMIN: 'admin'
 };
 
+// Budget Categories
+export const BUDGET_CATEGORIES = [
+  { category: 'Accommodation', icon: 'bed', color: '#3B82F6' },
+  { category: 'Transportation', icon: 'airplane', color: '#10B981' },
+  { category: 'Food & Dining', icon: 'restaurant', color: '#F59E0B' },
+  { category: 'Activities', icon: 'camera', color: '#8B5CF6' },
+  { category: 'Shopping', icon: 'bag', color: '#EF4444' },
+  { category: 'Miscellaneous', icon: 'card', color: '#6B7280' }
+];
+
 // Travel Tips
 export const TRAVEL_TIPS = [
     { tip: "🎒 Pack light, travel far", author: "Every seasoned traveler" },

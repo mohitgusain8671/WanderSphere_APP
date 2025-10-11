@@ -9,6 +9,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { TravelWisdom } from '../../components/TravelWisdom';
 import { WanderLustCard } from '../../components/WanderLustCard';
 import { WelcomeMessage } from '../../components/WelcomeMessage';
+import { BudgetCalculator } from '../../components/BudgetCalculator';
+import { UserProfileView } from '../../components/UserProfileView';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store/index';
 
@@ -31,6 +33,9 @@ export default function ExploreScreen() {
   const [selectedItinerary, setSelectedItinerary] = useState<any>(null);
   const [showItineraryDisplay, setShowItineraryDisplay] = useState(false);
   const [isLoadingItinerary, setIsLoadingItinerary] = useState(false);
+  const [showBudgetCalculator, setShowBudgetCalculator] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   // Load wanderlust data on component mount
   useEffect(() => {
@@ -56,6 +61,11 @@ export default function ExploreScreen() {
     setShowWanderlustModal(true);
   };
 
+  const handleUserPress = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowUserProfile(true);
+  };
+
   const handleSidebarNavigate = (screen: string) => {
     setCurrentScreen(screen);
     // Handle navigation to different screens based on selection
@@ -65,6 +75,9 @@ export default function ExploreScreen() {
         break;
       case 'ItineraryList':
         setShowItineraryList(true);
+        break;
+      case 'BudgetCalculator':
+        setShowBudgetCalculator(true);
         break;
       case 'explore':
         // Return to explore screen
@@ -493,6 +506,22 @@ export default function ExploreScreen() {
           }}
         />
       )}
+
+      {/* Budget Calculator */}
+      <BudgetCalculator
+        visible={showBudgetCalculator}
+        onClose={() => setShowBudgetCalculator(false)}
+      />
+
+      {/* User Profile View */}
+      <UserProfileView
+        visible={showUserProfile}
+        userId={selectedUserId}
+        onClose={() => {
+          setShowUserProfile(false);
+          setSelectedUserId('');
+        }}
+      />
     </SafeAreaView>
   );
 }

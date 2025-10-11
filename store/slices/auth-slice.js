@@ -297,6 +297,50 @@ export const createAuthSlice = (set, get) => ({
     }
   },
 
+  // Get user by ID
+  getUserById: async (userId) => {
+    try {
+      const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+      const response = await axios.get(`${API_BASE_URL}/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      const data = response.data;
+      
+      if (data.success) {
+        return { success: true, data: data.data };
+      } else {
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to get user';
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  // Get user posts
+  getUserPosts: async (userId, page = 1) => {
+    try {
+      const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+      const response = await axios.get(`${API_BASE_URL}/posts/user/${userId}?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      const data = response.data;
+      
+      if (data.success) {
+        return { success: true, data: data.data.posts };
+      } else {
+        return { success: false, error: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to get user posts';
+      return { success: false, error: errorMessage };
+    }
+  },
+
   // Initialize Auth (check stored tokens)
   initializeAuth: async () => {
     set({ isLoading: true });

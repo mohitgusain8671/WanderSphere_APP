@@ -5,6 +5,7 @@ import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
+import { UserProfileView } from '../../components/UserProfileView';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 
@@ -24,6 +25,8 @@ export default function AddFriendsScreen() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'received' | 'sent'>('search');
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useEffect(() => {
     // Load friend requests on mount
@@ -52,21 +55,32 @@ export default function AddFriendsScreen() {
     await respondToFriendRequest(friendshipId, action);
   };
 
+  const handleUserPress = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowUserProfile(true);
+  };
+
   const renderSearchResult = ({ item: user }: { item: any }) => (
     <View 
       className="flex-row items-center p-4 mb-2 rounded-xl"
       style={{ backgroundColor: colors.surface }}
     >
-      <View className="mr-3">
+      <TouchableOpacity 
+        className="mr-3"
+        onPress={() => handleUserPress(user._id)}
+      >
         <ProfileAvatar 
           size={48} 
           userId={user._id}
           profilePicture={user.profilePicture}
           style={{ backgroundColor: colors.background }}
         />
-      </View>
+      </TouchableOpacity>
       
-      <View className="flex-1">
+      <TouchableOpacity 
+        className="flex-1"
+        onPress={() => handleUserPress(user._id)}
+      >
         <Text 
           className="font-semibold text-base"
           style={{ color: colors.text }}
@@ -88,7 +102,7 @@ export default function AddFriendsScreen() {
             {user.bio}
           </Text>
         )}
-      </View>
+      </TouchableOpacity>
       
       <View>
         {user.friendshipStatus === 'none' && (
@@ -138,9 +152,10 @@ export default function AddFriendsScreen() {
       className="flex-row items-center p-4 mb-2 rounded-xl"
       style={{ backgroundColor: colors.surface }}
     >
-      <View 
+      <TouchableOpacity 
         className="w-12 h-12 rounded-full items-center justify-center mr-3"
         style={{ backgroundColor: colors.background }}
+        onPress={() => handleUserPress(request.requester._id)}
       >
         {request.requester.profilePicture ? (
           <Image
@@ -150,9 +165,12 @@ export default function AddFriendsScreen() {
         ) : (
           <Ionicons name="person" size={24} color={colors.text} />
         )}
-      </View>
+      </TouchableOpacity>
       
-      <View className="flex-1">
+      <TouchableOpacity 
+        className="flex-1"
+        onPress={() => handleUserPress(request.requester._id)}
+      >
         <Text 
           className="font-semibold text-base"
           style={{ color: colors.text }}
@@ -165,7 +183,7 @@ export default function AddFriendsScreen() {
         >
           🌍 wants to be travel buddies
         </Text>
-      </View>
+      </TouchableOpacity>
       
       <View className="flex-row space-x-2">
         <Button
@@ -188,9 +206,10 @@ export default function AddFriendsScreen() {
       className="flex-row items-center p-4 mb-2 rounded-xl"
       style={{ backgroundColor: colors.surface }}
     >
-      <View 
+      <TouchableOpacity 
         className="w-12 h-12 rounded-full items-center justify-center mr-3"
         style={{ backgroundColor: colors.background }}
+        onPress={() => handleUserPress(request.recipient._id)}
       >
         {request.recipient.profilePicture ? (
           <Image
@@ -200,9 +219,12 @@ export default function AddFriendsScreen() {
         ) : (
           <Ionicons name="person" size={24} color={colors.text} />
         )}
-      </View>
+      </TouchableOpacity>
       
-      <View className="flex-1">
+      <TouchableOpacity 
+        className="flex-1"
+        onPress={() => handleUserPress(request.recipient._id)}
+      >
         <Text 
           className="font-semibold text-base"
           style={{ color: colors.text }}
@@ -215,7 +237,7 @@ export default function AddFriendsScreen() {
         >
           ✈️ Travel buddy request sent
         </Text>
-      </View>
+      </TouchableOpacity>
       
       <Text 
         className="text-sm px-3 py-1 rounded-full"
@@ -421,6 +443,16 @@ export default function AddFriendsScreen() {
           )}
         />
       </View>
+
+      {/* User Profile View */}
+      <UserProfileView
+        visible={showUserProfile}
+        userId={selectedUserId}
+        onClose={() => {
+          setShowUserProfile(false);
+          setSelectedUserId('');
+        }}
+      />
     </SafeAreaView>
   );
 }
