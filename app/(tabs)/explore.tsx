@@ -89,7 +89,65 @@ export default function ExploreScreen() {
   };
 
   const renderScreenContent = () => {
-    if (currentScreen === 'explore') {
+    if(currentScreen==='PopularDestinations'|| currentScreen === 'TravelInspiration'){
+      // For New Features
+      return (
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+        }}>
+          <View style={{
+            backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+            borderRadius: 16,
+            padding: 24,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
+          }}>
+            <Ionicons name="construct" size={48} color="#10B981" />
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: colors.text,
+              marginTop: 16,
+              textAlign: 'center',
+            }}>
+              Coming Soon!
+            </Text>
+            <Text style={{
+              fontSize: 14,
+              color: colors.textSecondary,
+              marginTop: 8,
+              textAlign: 'center',
+              lineHeight: 20,
+            }}>
+              The {currentScreen.replace(/([A-Z])/g, ' $1').toLowerCase()} feature is being built.
+              Stay tuned for amazing travel planning tools!
+            </Text>
+            <TouchableOpacity
+              onPress={() => setCurrentScreen('explore')}
+              style={{
+                backgroundColor: '#10B981',
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 12,
+                marginTop: 20,
+              }}
+            >
+              <Text style={{
+                color: 'white',
+                fontSize: 14,
+                fontWeight: '600',
+              }}>
+                Back to Explore
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
       return (
         <>
           {/* Daily Travel Inspiration */}
@@ -126,65 +184,7 @@ export default function ExploreScreen() {
           <TravelWisdom />
         </>
       );
-    }
     
-    // For other screens, show a placeholder
-    return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-      }}>
-        <View style={{
-          backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
-          borderRadius: 16,
-          padding: 24,
-          alignItems: 'center',
-          borderWidth: 1,
-          borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
-        }}>
-          <Ionicons name="construct" size={48} color="#10B981" />
-          <Text style={{
-            fontSize: 20,
-            fontWeight: '700',
-            color: colors.text,
-            marginTop: 16,
-            textAlign: 'center',
-          }}>
-            Coming Soon!
-          </Text>
-          <Text style={{
-            fontSize: 14,
-            color: colors.textSecondary,
-            marginTop: 8,
-            textAlign: 'center',
-            lineHeight: 20,
-          }}>
-            The {currentScreen.replace(/([A-Z])/g, ' $1').toLowerCase()} feature is being built.
-            Stay tuned for amazing travel planning tools!
-          </Text>
-          <TouchableOpacity
-            onPress={() => setCurrentScreen('explore')}
-            style={{
-              backgroundColor: '#10B981',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 12,
-              marginTop: 20,
-            }}
-          >
-            <Text style={{
-              color: 'white',
-              fontSize: 14,
-              fontWeight: '600',
-            }}>
-              Back to Explore
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
   };
 
   return (
