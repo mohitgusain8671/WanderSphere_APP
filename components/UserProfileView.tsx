@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppStore } from '../store';
 import { capitalize } from '../utils/helpers';
+import { router } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     sentRequests,
     friendRequests,
     sendFriendRequest,
+    createChat,
   } = useAppStore();
   
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -124,9 +126,27 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     }
   };
 
-  const handleMessage = () => {
-    // TODO: Implement message functionality
-    console.log('Message user:', userId);
+  const handleMessage = async () => {
+    try {
+      const result = await createChat(userId);
+      if (result.success) {
+        // Close the profile modal first
+        onClose();
+        
+        // Navigate to the chat using router.navigate for dynamic routes
+        router.navigate({
+          pathname: '/(tabs)/chat/[chatId]' as any,
+          params: { 
+            chatId: result.data._id,
+            chatName: `${userProfile?.firstName} ${userProfile?.lastName}`
+          }
+        });
+      } else {
+        console.error('Failed to create chat:', result.error);
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+    }
   };
 
   // Filter posts by selected country

@@ -96,6 +96,22 @@ export const ITINERARY_ROUTES = {
     POPULAR_DESTINATIONS: `${API_BASE_URL}/itinerary/popular-destinations`
 };
 
+// Message Routes
+export const MESSAGE_ROUTES = {
+    BASE: `${API_BASE_URL}/chats`,
+    GET_CHATS: `${API_BASE_URL}/chats`,
+    CREATE_CHAT: `${API_BASE_URL}/chats`,
+    CREATE_GROUP: `${API_BASE_URL}/chats/group`,
+    SEARCH_USERS: `${API_BASE_URL}/chats/search-users`,
+    GET_CHAT: (chatId: string) => `${API_BASE_URL}/chats/${chatId}`,
+    DELETE_CHAT: (chatId: string) => `${API_BASE_URL}/chats/${chatId}`,
+    GET_MESSAGES: (chatId: string) => `${API_BASE_URL}/messages/${chatId}`,
+    SEND_MESSAGE: (chatId: string) => `${API_BASE_URL}/messages/${chatId}`,
+    MARK_READ: (chatId: string) => `${API_BASE_URL}/messages/${chatId}/read`,
+    EDIT_MESSAGE: (messageId: string) => `${API_BASE_URL}/messages/edit/${messageId}`,
+    DELETE_MESSAGE: (messageId: string) => `${API_BASE_URL}/messages/${messageId}`
+};
+
 // App Configuration
 export const APP_NAME = 'WanderSphere';
 

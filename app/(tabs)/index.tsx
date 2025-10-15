@@ -1,26 +1,26 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { InfiniteScrollView } from '../../components/InfiniteScrollView';
-import { SinglePostView } from '../../components/SinglePostView';
-import { StoriesBar } from '../../components/StoriesBar';
-import { StoryViewer } from '../../components/StoryViewer';
-import { UserProfileView } from '../../components/UserProfileView';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useAppStore } from '../../store';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { InfiniteScrollView } from "../../components/InfiniteScrollView";
+import { SinglePostView } from "../../components/SinglePostView";
+import { StoriesBar } from "../../components/StoriesBar";
+import { StoryViewer } from "../../components/StoryViewer";
+import { UserProfileView } from "../../components/UserProfileView";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useAppStore } from "../../store";
 
 export default function HomeScreen() {
   const { colors, isDarkMode, toggleTheme } = useTheme();
-  const { storyGroups, getStories, getUnreadCount, user } = useAppStore();
+  const { storyGroups, getStories, getUnreadCount } = useAppStore();
   const [refreshingStories, setRefreshingStories] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   useEffect(() => {
     loadStories();
@@ -34,17 +34,19 @@ export default function HomeScreen() {
   };
 
   const handleStoryPress = (storyGroup: any) => {
-    const groupIndex = storyGroups.findIndex(group => group.author._id === storyGroup.author._id);
+    const groupIndex = storyGroups.findIndex(
+      (group: any) => group.author._id === storyGroup.author._id
+    );
     setSelectedStoryGroupIndex(groupIndex >= 0 ? groupIndex : 0);
     setShowStoryViewer(true);
   };
 
   const handleAddStoryPress = () => {
-    router.push('/(tabs)/add-story');
+    router.push("/(tabs)/add-story");
   };
 
   const handleAddPostPress = () => {
-    router.push('/(tabs)/add-post');
+    router.push("/(tabs)/add-post");
   };
 
   const handlePostPress = (post: any) => {
@@ -53,8 +55,11 @@ export default function HomeScreen() {
   };
 
   const handleCommentPress = (post: any) => {
-    console.log('View comments for post:', post._id);
-    Alert.alert('Comments', `Viewing comments for ${post.author.firstName}'s post`);
+    console.log("View comments for post:", post._id);
+    Alert.alert(
+      "Comments",
+      `Viewing comments for ${post.author.firstName}'s post`
+    );
   };
 
   const handleUserPress = (userId: string) => {
@@ -65,34 +70,42 @@ export default function HomeScreen() {
   const renderHeader = () => (
     <View>
       {/* Header */}
-      <View 
+      <View
         style={{
           paddingHorizontal: 20,
           paddingTop: 12,
           paddingBottom: 20,
-          backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.03)',
+          backgroundColor: isDarkMode
+            ? "rgba(16, 185, 129, 0.05)"
+            : "rgba(16, 185, 129, 0.03)",
           borderBottomWidth: 1,
-          borderBottomColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+          borderBottomColor: isDarkMode
+            ? "rgba(16, 185, 129, 0.1)"
+            : "rgba(16, 185, 129, 0.08)",
         }}
       >
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          marginBottom: 16 
-        }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{
-              width: 6,
-              height: 28,
-              backgroundColor: '#10B981',
-              borderRadius: 3,
-              marginRight: 12,
-            }} />
-            <Text 
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={{
+                width: 6,
+                height: 28,
+                backgroundColor: "#10B981",
+                borderRadius: 3,
+                marginRight: 12,
+              }}
+            />
+            <Text
               style={{
                 fontSize: 24,
-                fontWeight: '800',
+                fontWeight: "800",
                 color: colors.text,
                 letterSpacing: -0.5,
               }}
@@ -100,32 +113,57 @@ export default function HomeScreen() {
               🌍 WanderLands
             </Text>
           </View>
-          
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <TouchableOpacity 
-              onPress={toggleTheme}
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/messages" as any)}
               style={{
-                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                backgroundColor: isDarkMode
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
                 borderRadius: 12,
                 padding: 10,
               }}
             >
-              <Ionicons 
-                name={isDarkMode ? 'sunny' : 'moon'} 
-                size={20} 
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
                 color={colors.text}
               />
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              onPress={() => router.push('/(tabs)/notifications')}
+
+            <TouchableOpacity
+              onPress={toggleTheme}
               style={{
-                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                backgroundColor: isDarkMode
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
                 borderRadius: 12,
                 padding: 10,
               }}
             >
-              <Ionicons name="notifications-outline" size={20} color={colors.text} />
+              <Ionicons
+                name={isDarkMode ? "sunny" : "moon"}
+                size={20}
+                color={colors.text}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/notifications")}
+              style={{
+                backgroundColor: isDarkMode
+                  ? "rgba(255, 255, 255, 0.1)"
+                  : "rgba(0, 0, 0, 0.05)",
+                borderRadius: 12,
+                padding: 10,
+              }}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color={colors.text}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -134,12 +172,16 @@ export default function HomeScreen() {
       {/* Stories Section */}
       {!refreshingStories && storyGroups.length > 0 && (
         <View style={{ marginBottom: 16 }}>
-          <View style={{ paddingHorizontal: 20, marginBottom: 12, marginTop: 16 }}>
-            <Text style={{
-              fontSize: 18,
-              fontWeight: '700',
-              color: colors.text,
-            }}>
+          <View
+            style={{ paddingHorizontal: 20, marginBottom: 12, marginTop: 16 }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: colors.text,
+              }}
+            >
               📸 Adventure Stories
             </Text>
           </View>
@@ -152,59 +194,79 @@ export default function HomeScreen() {
       )}
 
       {/* Quick Actions */}
-      <View style={{
-        flexDirection: 'row',
-        paddingHorizontal: 20,
-        marginBottom: 20,
-        gap: 12,
-      }}>
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 20,
+          marginBottom: 20,
+          gap: 12,
+        }}
+      >
         <TouchableOpacity
           onPress={handleAddPostPress}
           style={{
             flex: 1,
-            backgroundColor: '#10B981',
+            backgroundColor: "#10B981",
             borderRadius: 12,
             padding: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
             elevation: 3,
-            shadowColor: '#10B981',
+            shadowColor: "#10B981",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
           }}
         >
-          <Ionicons name="add-circle" size={20} color="white" style={{ marginRight: 8 }} />
-          <Text style={{
-            color: 'white',
-            fontSize: 14,
-            fontWeight: '600',
-          }}>
+          <Ionicons
+            name="add-circle"
+            size={20}
+            color="white"
+            style={{ marginRight: 8 }}
+          />
+          <Text
+            style={{
+              color: "white",
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
             Share Post
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/explore')}
+          onPress={() => router.push("/(tabs)/explore")}
           style={{
             flex: 1,
-            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+            backgroundColor: isDarkMode
+              ? "rgba(255, 255, 255, 0.1)"
+              : "rgba(0, 0, 0, 0.05)",
             borderRadius: 12,
             padding: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
             borderWidth: 1,
-            borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.15)',
+            borderColor: isDarkMode
+              ? "rgba(16, 185, 129, 0.2)"
+              : "rgba(16, 185, 129, 0.15)",
           }}
         >
-          <Ionicons name="compass" size={20} color="#10B981" style={{ marginRight: 8 }} />
-          <Text style={{
-            color: '#10B981',
-            fontSize: 14,
-            fontWeight: '600',
-          }}>
+          <Ionicons
+            name="compass"
+            size={20}
+            color="#10B981"
+            style={{ marginRight: 8 }}
+          />
+          <Text
+            style={{
+              color: "#10B981",
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
             Explore
           </Text>
         </TouchableOpacity>
@@ -212,11 +274,13 @@ export default function HomeScreen() {
 
       {/* Posts Feed Header */}
       <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '700',
-          color: colors.text,
-        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "700",
+            color: colors.text,
+          }}
+        >
           🌟 Travel Feed
         </Text>
       </View>
@@ -224,10 +288,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView 
-      style={{ 
-        flex: 1, 
-        backgroundColor: colors.background 
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
       }}
     >
       <InfiniteScrollView
@@ -263,7 +327,7 @@ export default function HomeScreen() {
         userId={selectedUserId}
         onClose={() => {
           setShowUserProfile(false);
-          setSelectedUserId('');
+          setSelectedUserId("");
         }}
       />
     </SafeAreaView>

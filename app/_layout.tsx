@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastProvider, useToast } from '../contexts/ToastContext';
+import { SocketProvider } from '../contexts/SocketContext';
 import { useAppStore } from '../store';
 
 import { setupDeepLinkHandling } from '../utils/deeplink';
@@ -62,13 +63,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <AuthWrapper>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </AuthWrapper>
+        <SocketProvider>
+          <AuthWrapper>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </AuthWrapper>
+        </SocketProvider>
       </ToastProvider>
     </ThemeProvider>
   );
