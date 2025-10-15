@@ -820,7 +820,7 @@ export default function ChatScreen() {
               : "rgba(0, 0, 0, 0.1)",
             paddingHorizontal: 16,
             paddingVertical: 12,
-            paddingBottom: 70, // Add padding to avoid bottom tab bar
+            paddingBottom: 58, // Add padding to avoid bottom tab bar
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "flex-end" }}>

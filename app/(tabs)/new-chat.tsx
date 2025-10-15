@@ -267,7 +267,7 @@ export default function NewChatScreen() {
         {selectedTab === "friends"
           ? "Add some travel buddies to start chatting!"
           : selectedTab === "group"
-          ? "Add friends to create a group chat!"
+          ? "Add friends to create a group chat!\nRemember: You need at least 2 friends to create a group."
           : "Try searching with a different name or email"}
       </Text>
     </View>
@@ -423,15 +423,26 @@ export default function NewChatScreen() {
               value={groupName}
               onChangeText={setGroupName}
             />
-            <Text
-              style={{
-                fontSize: 12,
-                color: colors.textSecondary,
-                marginTop: 4,
-              }}
-            >
-              Select friends below to add to your group
-            </Text>
+            <View style={{ marginTop: 4 }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                }}
+              >
+                Select friends below to add to your group
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: selectedFriends.length < 2 ? "#F59E0B" : "#10B981",
+                  fontWeight: "600",
+                  marginTop: 2,
+                }}
+              >
+                ⚠️ Select at least 2 friends to create a group
+              </Text>
+            </View>
           </View>
         )}
 
@@ -469,19 +480,34 @@ export default function NewChatScreen() {
         )}
 
         {/* Selected Friends Count */}
-        {selectedTab === "group" && selectedFriends.length > 0 && (
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#10B981",
-              fontWeight: "600",
-              textAlign: "center",
-              marginTop: 8,
-            }}
-          >
-            {selectedFriends.length} friend
-            {selectedFriends.length !== 1 ? "s" : ""} selected
-          </Text>
+        {selectedTab === "group" && (
+          <View style={{ marginTop: 8, alignItems: "center" }}>
+            {selectedFriends.length > 0 ? (
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: selectedFriends.length >= 2 ? "#10B981" : "#F59E0B",
+                  fontWeight: "600",
+                  textAlign: "center",
+                }}
+              >
+                {selectedFriends.length} friend
+                {selectedFriends.length !== 1 ? "s" : ""} selected
+                {selectedFriends.length < 2 && " (Need at least 2)"}
+              </Text>
+            ) : (
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colors.textSecondary,
+                  fontWeight: "500",
+                  textAlign: "center",
+                }}
+              >
+                No friends selected yet
+              </Text>
+            )}
+          </View>
         )}
       </View>
 

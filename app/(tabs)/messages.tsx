@@ -28,6 +28,7 @@ export default function MessagesScreen() {
   } = useAppStore();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(
     null
   );
@@ -58,6 +59,17 @@ export default function MessagesScreen() {
 
   const handleNewChat = () => {
     router.push("/(tabs)/new-chat" as any);
+  };
+
+  const handleFilterChange = async (filter: string) => {
+    if (filter === chatFilter) return; // Don't reload if same filter
+    
+    setIsFilterLoading(true);
+    setChatFilter(filter);
+    
+    // Load chats with new filter
+    await getUserChats(1, filter);
+    setIsFilterLoading(false);
   };
 
   const handleSearch = (query: string) => {
@@ -210,7 +222,8 @@ export default function MessagesScreen() {
           {filterOptions.map((option) => (
             <TouchableOpacity
               key={option.key}
-              onPress={() => setChatFilter(option.key)}
+              onPress={() => handleFilterChange(option.key)}
+              disabled={isFilterLoading}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -231,13 +244,18 @@ export default function MessagesScreen() {
                     : isDarkMode
                     ? "rgba(255, 255, 255, 0.2)"
                     : "rgba(0, 0, 0, 0.1)",
+                opacity: isFilterLoading ? 0.7 : 1,
               }}
             >
-              <Ionicons
-                name={option.icon as any}
-                size={16}
-                color={chatFilter === option.key ? "white" : colors.text}
-              />
+              {isFilterLoading && chatFilter === option.key ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons
+                  name={option.icon as any}
+                  size={16}
+                  color={chatFilter === option.key ? "white" : colors.text}
+                />
+              )}
               <Text
                 style={{
                   marginLeft: 6,
@@ -254,7 +272,7 @@ export default function MessagesScreen() {
       </View>
 
       {/* Chat List */}
-      {isChatsLoading && chats.length === 0 ? (
+      {(isChatsLoading || isFilterLoading) && chats.length === 0 ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -266,8 +284,53 @@ export default function MessagesScreen() {
               color: colors.textSecondary,
             }}
           >
-            Loading conversations...
+            {isFilterLoading ? "Filtering conversations..." : "Loading conversations..."}
           </Text>
+        </View>
+      ) : isFilterLoading ? (
+        <View
+          style={{ 
+            flex: 1, 
+            justifyContent: "center", 
+            alignItems: "center",
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)'
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 24,
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <ActivityIndicator size="large" color="#10B981" />
+            <Text
+              style={{
+                marginTop: 16,
+                fontSize: 16,
+                fontWeight: "600",
+                color: colors.text,
+              }}
+            >
+              Updating filter...
+            </Text>
+            <Text
+              style={{
+                marginTop: 4,
+                fontSize: 14,
+                color: colors.textSecondary,
+                textAlign: "center",
+              }}
+            >
+              Please wait while we load your {chatFilter} conversations
+            </Text>
+          </View>
         </View>
       ) : (
         <ChatList
