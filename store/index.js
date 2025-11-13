@@ -8,6 +8,7 @@ import { createNotificationsSlice } from "./slices/notifications-slice";
 import { createWanderlustSlice } from "./slices/wanderlust-slice";
 import { createItinerarySlice } from "./slices/itinerary-slice";
 import { createMessageSlice } from "./slices/message-slice";
+import { createAdminSlice } from "./slices/admin-slice";
 
 export const useAppStore = create()((...a) => ({
   ...createAuthSlice(...a),
@@ -19,4 +20,5 @@ export const useAppStore = create()((...a) => ({
   ...createWanderlustSlice(...a),
   ...createItinerarySlice(...a),
   ...createMessageSlice(...a),
+  ...createAdminSlice(...a),
 }));

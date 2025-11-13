@@ -1,9 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_HOST
-  ? `${process.env.EXPO_PUBLIC_API_HOST}/api`
-  : "http://localhost:5000/api";
+import { API_BASE_URL } from "@/utils/constants";
 
 const STORAGE_KEYS = {
   ACCESS_TOKEN: "access_token",

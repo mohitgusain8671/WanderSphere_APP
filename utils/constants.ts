@@ -2,6 +2,7 @@
 import Constants from 'expo-constants';
 
 export const HOST = Constants.expoConfig?.extra?.apiHost || 'http://localhost:5000';
+// export const HOST = 'http://localhost:5000';
 export const API_BASE_URL = `${HOST}/api`;
 
 export const AUTH_ROUTES = {
@@ -158,7 +159,42 @@ export const STORAGE_KEYS = {
 // User Roles
 export const USER_ROLES = {
     USER: 'user',
-    ADMIN: 'admin'
+    ADMIN: 'admin',
+    SUPER_ADMIN: 'super_admin'
+};
+
+// Admin Permissions
+export const ADMIN_PERMISSIONS = {
+    USER_MANAGEMENT: 'user_management',
+    POST_MANAGEMENT: 'post_management',
+    STORY_MANAGEMENT: 'story_management',
+    QUERY_MANAGEMENT: 'query_management',
+    ITINERARY_MANAGEMENT: 'itinerary_management',
+    WANDERLUST_MANAGEMENT: 'wanderlust_management',
+    EMAIL_MANAGEMENT: 'email_management',
+    ADMIN_MANAGEMENT: 'admin_management',
+    ANALYTICS_VIEW: 'analytics_view',
+    SYSTEM_SETTINGS: 'system_settings'
+};
+
+// Admin Routes
+export const ADMIN_ROUTES = {
+    BASE: `${API_BASE_URL}/admin`,
+    DASHBOARD: `${API_BASE_URL}/admin/dashboard`,
+    USERS: `${API_BASE_URL}/admin/users`,
+    GET_USER: (userId: string) => `${API_BASE_URL}/admin/users/${userId}`,
+    CREATE_USER: `${API_BASE_URL}/admin/users`,
+    UPDATE_USER: (userId: string) => `${API_BASE_URL}/admin/users/${userId}`,
+    DELETE_USER: (userId: string) => `${API_BASE_URL}/admin/users/${userId}`,
+    CHANGE_ROLE: (userId: string) => `${API_BASE_URL}/admin/users/${userId}/role`,
+    UPDATE_PERMISSIONS: (userId: string) => `${API_BASE_URL}/admin/users/${userId}/permissions`,
+    POSTS: `${API_BASE_URL}/admin/posts`,
+    DELETE_POST: (postId: string) => `${API_BASE_URL}/admin/posts/${postId}`,
+    STORIES: `${API_BASE_URL}/admin/stories`,
+    DELETE_STORY: (storyId: string) => `${API_BASE_URL}/admin/stories/${storyId}`,
+    EXPORT_DATA: (type: string) => `${API_BASE_URL}/admin/export/${type}`,
+    BROADCAST_EMAIL: `${API_BASE_URL}/admin/broadcast-email`,
+    SYSTEM_HEALTH: `${API_BASE_URL}/admin/system-health`
 };
 
 // Budget Categories

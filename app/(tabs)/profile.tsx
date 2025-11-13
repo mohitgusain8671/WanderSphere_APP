@@ -2147,6 +2147,52 @@ export default function UniqueProfileScreen() {
                     <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                   </TouchableOpacity>
 
+                  {/* Admin Panel - Only visible for admins */}
+                  {(user?.role === 'admin' || user?.role === 'super_admin') && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowActionDrawer(false);
+                        router.push('/(admin)/dashboard' as any);
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 24,
+                        paddingVertical: 16,
+                        marginHorizontal: 12,
+                        borderRadius: 16,
+                        marginBottom: 8,
+                        backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+                      }}
+                    >
+                      <View style={{
+                        backgroundColor: '#EF4444',
+                        borderRadius: 12,
+                        padding: 10,
+                        marginRight: 16,
+                      }}>
+                        <Ionicons name="shield-checkmark" size={20} color="white" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{
+                          fontSize: 16,
+                          fontWeight: '700',
+                          color: colors.text,
+                          marginBottom: 2,
+                        }}>
+                          Admin Panel
+                        </Text>
+                        <Text style={{
+                          fontSize: 13,
+                          color: colors.textSecondary,
+                        }}>
+                          Manage users, content & system
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  )}
+
                   {/* Settings */}
                   <TouchableOpacity
                     onPress={() => {
