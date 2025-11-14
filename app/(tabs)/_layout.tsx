@@ -164,6 +164,12 @@ export default function TabLayout() {
           }}
         />
 
+        <Tabs.Screen
+          name="queries"
+          options={{
+            href: null,
+          }}
+        />
         {/* Message screens - hidden from tab bar */}
         <Tabs.Screen
           name="messages"

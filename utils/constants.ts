@@ -113,6 +113,17 @@ export const MESSAGE_ROUTES = {
     DELETE_MESSAGE: (messageId: string) => `${API_BASE_URL}/messages/${messageId}`
 };
 
+// Query Routes
+export const QUERY_ROUTES = {
+    BASE: `${API_BASE_URL}/queries`,
+    CREATE: `${API_BASE_URL}/queries`,
+    MY_QUERIES: `${API_BASE_URL}/queries/my-queries`,
+    GET_QUERY: (queryId: string) => `${API_BASE_URL}/queries/${queryId}`,
+    ADMIN_ALL: `${API_BASE_URL}/queries/admin/all`,
+    ADMIN_UPDATE_STATUS: (queryId: string) => `${API_BASE_URL}/queries/admin/${queryId}/status`,
+    ADMIN_STATISTICS: `${API_BASE_URL}/queries/admin/statistics/overview`
+};
+
 // App Configuration
 export const APP_NAME = 'WanderSphere';
 

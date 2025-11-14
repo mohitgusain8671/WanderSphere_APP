@@ -95,6 +95,13 @@ export default function AdminDashboard() {
             trend="+15%"
           />
           <StatCard
+            title="Total Queries"
+            value={dashboardData?.overview?.totalQueries || 0}
+            icon="chatbubbles"
+            color="#06B6D4"
+            trend="+18%"
+          />
+          <StatCard
             title="Pending Queries"
             value={dashboardData?.overview?.pendingQueries || 0}
             icon="help-circle"

@@ -26,6 +26,7 @@ export default function UsersManagement() {
     updateUser,
     deleteUser,
     changeUserRole,
+    updateUserPermissions,
   } = useAppStore();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -34,7 +35,9 @@ export default function UsersManagement() {
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   // Create User Form State
   const [newUser, setNewUser] = useState({
@@ -222,6 +225,40 @@ export default function UsersManagement() {
     }));
   };
 
+  const toggleSelectedPermission = (permission: string) => {
+    setSelectedPermissions(prev =>
+      prev.includes(permission)
+        ? prev.filter(p => p !== permission)
+        : [...prev, permission]
+    );
+  };
+
+  const handleManagePermissions = (user: any) => {
+    if (user.role !== 'admin') {
+      Alert.alert('Error', 'Permissions can only be managed for admin users');
+      return;
+    }
+    setSelectedUser(user);
+    setSelectedPermissions(user.permissions || []);
+    setShowPermissionsModal(true);
+  };
+
+  const handleUpdatePermissions = async () => {
+    if (!selectedUser) return;
+
+    const result = await updateUserPermissions(selectedUser._id, selectedPermissions);
+    
+    if (result.success) {
+      Alert.alert('Success', 'Permissions updated successfully. User has been notified via email.');
+      setShowPermissionsModal(false);
+      setSelectedUser(null);
+      setSelectedPermissions([]);
+      loadUsers();
+    } else {
+      Alert.alert('Error', result.error || 'Failed to update permissions');
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {/* Search and Filters */}
@@ -296,9 +333,9 @@ export default function UsersManagement() {
           </View>
         ) : (
           <View style={{ padding: 16, gap: 12 }}>
-            {adminUsers.map((user: any) => (
+            {adminUsers.map((listUser: any) => (
               <View
-                key={user._id}
+                key={listUser._id}
                 style={{
                   backgroundColor: colors.surface,
                   borderRadius: 12,
@@ -323,14 +360,14 @@ export default function UsersManagement() {
                     }}
                   >
                     <Text style={{ color: 'white', fontSize: 18, fontWeight: '700' }}>
-                      {user.firstName.charAt(0).toUpperCase()}
+                      {listUser.firstName.charAt(0).toUpperCase()}
                     </Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
-                      {user.firstName} {user.lastName}
+                      {listUser.firstName} {listUser.lastName}
                     </Text>
-                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>{user.email}</Text>
+                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>{listUser.email}</Text>
                   </View>
                   <View
                     style={{
@@ -338,24 +375,51 @@ export default function UsersManagement() {
                       paddingVertical: 4,
                       borderRadius: 12,
                       backgroundColor:
-                        user.role === 'super_admin' ? '#EF4444' : user.role === 'admin' ? '#F59E0B' : '#10B981',
+                        listUser.role === 'super_admin' ? '#EF4444' : listUser.role === 'admin' ? '#F59E0B' : '#10B981',
                     }}
                   >
                     <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
-                      {user.role.replace('_', ' ').toUpperCase()}
+                      {listUser.role.replace('_', ' ').toUpperCase()}
                     </Text>
                   </View>
                 </View>
 
-                {user.bio && (
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 12 }}>{user.bio}</Text>
+                {listUser.bio && (
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 12 }}>{listUser.bio}</Text>
                 )}
 
-                <View style={{ flexDirection: 'row', gap: 8 }}>
+                {/* Show permissions for admin users */}
+                {listUser.role === 'admin' && listUser.permissions && listUser.permissions.length >= 0 && (
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                      Permissions:
+                    </Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                      {listUser.permissions.map((permission: string) => (
+                        <View
+                          key={permission}
+                          style={{
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 8,
+                            backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
+                          }}
+                        >
+                          <Text style={{ fontSize: 10, color: '#3B82F6', fontWeight: '600' }}>
+                            {permission.replace(/_/g, ' ').toUpperCase()}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                   <TouchableOpacity
-                    onPress={() => handleEditUser(user)}
+                    onPress={() => handleEditUser(listUser)}
                     style={{
                       flex: 1,
+                      minWidth: 100,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -368,12 +432,33 @@ export default function UsersManagement() {
                     <Text style={{ marginLeft: 6, color: 'white', fontSize: 14, fontWeight: '600' }}>Edit</Text>
                   </TouchableOpacity>
 
-                  {user.role !== 'super_admin' && (
+                  {listUser.role !== 'super_admin' && (
                     <>
+                      {/* Show Permissions button only for admin users and only if current logged-in user is super_admin */}
+                      {listUser.role === 'admin' && user?.role === 'super_admin' && (
+                        <TouchableOpacity
+                          onPress={() => handleManagePermissions(listUser)}
+                          style={{
+                            flex: 1,
+                            minWidth: 100,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#8B5CF6',
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                          }}
+                        >
+                          <Ionicons name="key-outline" size={18} color="white" />
+                          <Text style={{ marginLeft: 6, color: 'white', fontSize: 14, fontWeight: '600' }}>Permissions</Text>
+                        </TouchableOpacity>
+                      )}
+
                       <TouchableOpacity
-                        onPress={() => handleChangeRole(user._id, user.role)}
+                        onPress={() => handleChangeRole(listUser._id, listUser.role)}
                         style={{
                           flex: 1,
+                          minWidth: 100,
                           flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -387,9 +472,10 @@ export default function UsersManagement() {
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        onPress={() => handleDeleteUser(user._id, `${user.firstName} ${user.lastName}`)}
+                        onPress={() => handleDeleteUser(listUser._id, `${listUser.firstName} ${listUser.lastName}`)}
                         style={{
                           flex: 1,
+                          minWidth: 100,
                           flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -569,6 +655,184 @@ export default function UsersManagement() {
           </View>
         </View>
       </Modal>
+
+      {/* Manage Permissions Modal */}
+      <Modal visible={showPermissionsModal} animationType="slide" transparent>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <View>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>Manage Permissions</Text>
+                {selectedUser && (
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
+                    {selectedUser.firstName} {selectedUser.lastName}
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => setShowPermissionsModal(false)}>
+                <Ionicons name="close" size={28} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={{ 
+                backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', 
+                padding: 16, 
+                borderRadius: 12, 
+                marginBottom: 20,
+                borderLeftWidth: 4,
+                borderLeftColor: '#3B82F6',
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <Ionicons name="information-circle" size={20} color="#3B82F6" />
+                  <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '600', color: colors.text }}>
+                    Permission Management
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
+                  Grant or revoke permissions for this admin user. Changes will be applied immediately and the user will be notified via email.
+                </Text>
+              </View>
+
+              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 }}>
+                Select Permissions
+              </Text>
+
+              <View style={{ gap: 10, marginBottom: 20 }}>
+                {Object.values(ADMIN_PERMISSIONS).map((permission) => {
+                  const isSelected = selectedPermissions.includes(permission);
+                  return (
+                    <TouchableOpacity
+                      key={permission}
+                      onPress={() => toggleSelectedPermission(permission)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: 16,
+                        borderRadius: 12,
+                        backgroundColor: isSelected 
+                          ? (isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)')
+                          : colors.background,
+                        borderWidth: 2,
+                        borderColor: isSelected ? '#3B82F6' : 'transparent',
+                      }}
+                    >
+                      <View style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        backgroundColor: isSelected ? '#3B82F6' : colors.background,
+                        borderWidth: 2,
+                        borderColor: isSelected ? '#3B82F6' : colors.textSecondary,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 12,
+                      }}>
+                        {isSelected && <Ionicons name="checkmark" size={16} color="white" />}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ 
+                          fontSize: 15, 
+                          fontWeight: '600', 
+                          color: isSelected ? '#3B82F6' : colors.text,
+                          marginBottom: 2,
+                        }}>
+                          {permission.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                          {getPermissionDescription(permission)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={{ 
+                backgroundColor: colors.background, 
+                padding: 12, 
+                borderRadius: 8, 
+                marginBottom: 16,
+              }}>
+                <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                  <Text style={{ fontWeight: '600' }}>Selected: </Text>
+                  {selectedPermissions.length} of {Object.values(ADMIN_PERMISSIONS).length} permissions
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity
+                  onPress={() => setSelectedPermissions([])}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 14,
+                    borderRadius: 8,
+                    backgroundColor: colors.background,
+                    borderWidth: 1,
+                    borderColor: colors.textSecondary,
+                  }}
+                >
+                  <Text style={{ textAlign: 'center', color: colors.text, fontSize: 15, fontWeight: '600' }}>
+                    Clear All
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSelectedPermissions(Object.values(ADMIN_PERMISSIONS))}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 14,
+                    borderRadius: 8,
+                    backgroundColor: colors.background,
+                    borderWidth: 1,
+                    borderColor: '#3B82F6',
+                  }}
+                >
+                  <Text style={{ textAlign: 'center', color: '#3B82F6', fontSize: 15, fontWeight: '600' }}>
+                    Select All
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleUpdatePermissions}
+                disabled={isAdminUsersLoading}
+                style={{
+                  backgroundColor: '#3B82F6',
+                  paddingVertical: 16,
+                  borderRadius: 8,
+                  marginTop: 16,
+                  opacity: isAdminUsersLoading ? 0.6 : 1,
+                }}
+              >
+                {isAdminUsersLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ textAlign: 'center', color: 'white', fontSize: 16, fontWeight: '700' }}>
+                    Update Permissions
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
+}
+
+// Helper function to get permission descriptions
+function getPermissionDescription(permission: string): string {
+  const descriptions: { [key: string]: string } = {
+    user_management: 'Create, edit, and delete user accounts',
+    post_management: 'Moderate and delete user posts',
+    story_management: 'Moderate and delete user stories',
+    query_management: 'View and respond to user queries',
+    itinerary_management: 'Manage user itineraries',
+    wanderlust_management: 'Manage wanderlust content',
+    email_management: 'Send broadcast emails to users',
+    admin_management: 'Manage other admin accounts',
+    analytics_view: 'View analytics and reports',
+    system_settings: 'Modify system settings',
+  };
+  return descriptions[permission] || 'Manage this feature';
 }

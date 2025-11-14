@@ -2096,6 +2096,49 @@ export default function UniqueProfileScreen() {
                     <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                   </TouchableOpacity>
 
+                  {/* My Queries */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowActionDrawer(false);
+                      router.push('/(tabs)/queries' as any);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 24,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      borderRadius: 16,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: '#F59E0B',
+                      borderRadius: 12,
+                      padding: 10,
+                      marginRight: 16,
+                    }}>
+                      <Ionicons name="chatbubbles" size={20} color="white" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: '700',
+                        color: colors.text,
+                        marginBottom: 2,
+                      }}>
+                        My Queries
+                      </Text>
+                      <Text style={{
+                        fontSize: 13,
+                        color: colors.textSecondary,
+                      }}>
+                        View and track your support queries
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+
                   {/* Divider */}
                   <View style={{
                     height: 1,
