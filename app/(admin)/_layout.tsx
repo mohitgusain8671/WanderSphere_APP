@@ -156,7 +156,9 @@ export default function AdminLayout() {
         <Stack.Screen name="stories" />
         <Stack.Screen name="queries" />
         <Stack.Screen name="quizzes" />
+        <Stack.Screen name="quiz-details" />
         <Stack.Screen name="contests" />
+        <Stack.Screen name="contest-details" />
       </Stack>
     </SafeAreaView>
   );

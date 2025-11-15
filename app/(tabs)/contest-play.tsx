@@ -7,8 +7,10 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppStore } from '../../store';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -28,7 +30,22 @@ export default function ContestPlayScreen() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
-    if (contestProgress?.answers) {
+    // Check if contest is started
+    if (!contestProgress && currentContest) {
+      Alert.alert(
+        'Contest Not Started',
+        'Please start the contest from the contest details page first.',
+        [
+          {
+            text: 'Go Back',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+      return;
+    }
+
+    if (contestProgress?.answers && contestProgress.answers.length > 0) {
       setAnswers(contestProgress.answers);
     } else if (currentContest?.questions) {
       setAnswers(currentContest.questions.map(() => ({})));
@@ -40,6 +57,31 @@ export default function ContestPlayScreen() {
     newAnswers[index] = { ...newAnswers[index], ...answer };
     setAnswers(newAnswers);
     setHasUnsavedChanges(true);
+  };
+
+  const handleImagePick = async (index: number) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need camera roll permissions to upload photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      // For now, store the local URI. In production, you'd upload to a server
+      handleAnswerChange(index, {
+        questionIndex: index,
+        taskSubmission: result.assets[0].uri,
+        taskSubmissionType: 'photo',
+        type: 'task',
+      });
+    }
   };
 
   const handleSaveProgress = async () => {
@@ -94,6 +136,33 @@ export default function ContestPlayScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
       <View style={{ backgroundColor: colors.surface, padding: 20, paddingTop: 60 }}>
+        <TouchableOpacity 
+          onPress={() => {
+            if (hasUnsavedChanges) {
+              Alert.alert(
+                'Unsaved Changes',
+                'You have unsaved changes. Do you want to save before leaving?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Leave', style: 'destructive', onPress: () => router.back() },
+                  { text: 'Save & Leave', onPress: async () => {
+                    await handleSaveProgress();
+                    router.back();
+                  }},
+                ]
+              );
+            } else {
+              router.back();
+            }
+          }}
+          style={{ marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Text style={{ marginLeft: 8, fontSize: 16, color: colors.text, fontWeight: '600' }}>
+            Back
+          </Text>
+        </TouchableOpacity>
+        
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>
             {currentContest.title}
@@ -180,26 +249,77 @@ export default function ContestPlayScreen() {
                   <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 8 }}>
                     {question.taskDescription}
                   </Text>
-                  <TextInput
-                    style={{
-                      backgroundColor: colors.background,
-                      padding: 12,
-                      borderRadius: 8,
-                      color: colors.text,
-                      minHeight: 100,
-                      textAlignVertical: 'top',
-                    }}
-                    placeholder={`Enter your ${question.taskType} submission...`}
-                    placeholderTextColor={colors.textSecondary}
-                    value={answers[index]?.taskSubmission || ''}
-                    onChangeText={(text) => handleAnswerChange(index, {
-                      questionIndex: index,
-                      taskSubmission: text,
-                      taskSubmissionType: question.taskType,
-                      type: 'task',
-                    })}
-                    multiline
-                  />
+                  
+                  {question.taskType === 'photo' ? (
+                    <View>
+                      {answers[index]?.taskSubmission ? (
+                        <View>
+                          <Image
+                            source={{ uri: answers[index].taskSubmission }}
+                            style={{
+                              width: '100%',
+                              height: 200,
+                              borderRadius: 12,
+                              marginBottom: 12,
+                            }}
+                            resizeMode="cover"
+                          />
+                          <TouchableOpacity
+                            onPress={() => handleImagePick(index)}
+                            style={{
+                              backgroundColor: '#8B5CF6',
+                              paddingVertical: 12,
+                              borderRadius: 8,
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                              Change Photo
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => handleImagePick(index)}
+                          style={{
+                            backgroundColor: colors.background,
+                            padding: 40,
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            borderWidth: 2,
+                            borderColor: '#8B5CF6',
+                            borderStyle: 'dashed',
+                          }}
+                        >
+                          <Ionicons name="camera" size={48} color="#8B5CF6" />
+                          <Text style={{ marginTop: 12, fontSize: 14, color: '#8B5CF6', fontWeight: '600' }}>
+                            Upload Photo
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={{
+                        backgroundColor: colors.background,
+                        padding: 12,
+                        borderRadius: 8,
+                        color: colors.text,
+                        minHeight: 100,
+                        textAlignVertical: 'top',
+                      }}
+                      placeholder={`Enter your ${question.taskType} submission...`}
+                      placeholderTextColor={colors.textSecondary}
+                      value={answers[index]?.taskSubmission || ''}
+                      onChangeText={(text) => handleAnswerChange(index, {
+                        questionIndex: index,
+                        taskSubmission: text,
+                        taskSubmissionType: question.taskType,
+                        type: 'task',
+                      })}
+                      multiline
+                    />
+                  )}
                 </View>
               )}
             </View>

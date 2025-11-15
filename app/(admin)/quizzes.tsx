@@ -197,8 +197,16 @@ export default function AdminQuizzesManagement() {
         ) : (
           <View style={{ padding: 16, gap: 12 }}>
             {adminQuizzes.map((quiz: any) => (
-              <View
+              <TouchableOpacity
                 key={quiz._id}
+                onPress={() => {
+                  // Navigate to quiz details
+                  const { router } = require('expo-router');
+                  router.push({
+                    pathname: '/(admin)/quiz-details',
+                    params: { quizId: quiz._id },
+                  } as any);
+                }}
                 style={{
                   backgroundColor: colors.surface,
                   borderRadius: 12,
@@ -248,20 +256,39 @@ export default function AdminQuizzesManagement() {
                   </View>
                 </View>
 
-                <TouchableOpacity
-                  onPress={() => handleDeleteQuiz(quiz._id, quiz.title)}
-                  style={{
-                    backgroundColor: '#EF4444',
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
-                    Delete Quiz
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDeleteQuiz(quiz._id, quiz.title);
+                    }}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#EF4444',
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#3B82F6',
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                      View Details
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -343,22 +370,61 @@ export default function AdminQuizzesManagement() {
                   ))}
 
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-                    <TextInput
-                      style={{ flex: 1, backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
-                      placeholder="Points"
-                      placeholderTextColor={colors.textSecondary}
-                      value={q.points.toString()}
-                      onChangeText={(text) => updateQuestion(qIndex, 'points', parseInt(text) || 10)}
-                      keyboardType="numeric"
-                    />
-                    <TextInput
-                      style={{ flex: 1, backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
-                      placeholder="Time (s)"
-                      placeholderTextColor={colors.textSecondary}
-                      value={q.timeLimit.toString()}
-                      onChangeText={(text) => updateQuestion(qIndex, 'timeLimit', parseInt(text) || 30)}
-                      keyboardType="numeric"
-                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                        Points
+                      </Text>
+                      <TextInput
+                        style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                        placeholder="10"
+                        placeholderTextColor={colors.textSecondary}
+                        value={q.points.toString()}
+                        onChangeText={(text) => updateQuestion(qIndex, 'points', parseInt(text) || 10)}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                        Time Limit (seconds)
+                      </Text>
+                      <TextInput
+                        style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                        placeholder="30"
+                        placeholderTextColor={colors.textSecondary}
+                        value={q.timeLimit.toString()}
+                        onChangeText={(text) => updateQuestion(qIndex, 'timeLimit', parseInt(text) || 30)}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                        Bonus Time (seconds)
+                      </Text>
+                      <TextInput
+                        style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                        placeholder="10"
+                        placeholderTextColor={colors.textSecondary}
+                        value={q.bonusTimeThreshold.toString()}
+                        onChangeText={(text) => updateQuestion(qIndex, 'bonusTimeThreshold', parseInt(text) || 10)}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                        Bonus Points
+                      </Text>
+                      <TextInput
+                        style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                        placeholder="2"
+                        placeholderTextColor={colors.textSecondary}
+                        value={q.bonusPoints.toString()}
+                        onChangeText={(text) => updateQuestion(qIndex, 'bonusPoints', parseInt(text) || 2)}
+                        keyboardType="numeric"
+                      />
+                    </View>
                   </View>
                 </View>
               ))}

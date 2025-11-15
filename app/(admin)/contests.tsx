@@ -30,16 +30,18 @@ export default function AdminContestsManagement() {
   const [contestData, setContestData] = useState({
     title: '',
     description: '',
-    startTime: new Date().toISOString(),
-    endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    startTime: new Date().toISOString().slice(0, 16),
+    endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
     questions: [
       {
-        type: 'mcq',
+        type: 'mcq' as 'mcq' | 'task',
         question: '',
         options: ['', '', '', ''],
         correctAnswer: 0,
         points: 10,
         order: 0,
+        taskDescription: '',
+        taskType: 'text' as 'photo' | 'text' | 'trivia',
       },
     ],
     prize: {
@@ -48,6 +50,42 @@ export default function AdminContestsManagement() {
     },
     hasLeaderboard: true,
   });
+
+  const addQuestion = () => {
+    setContestData({
+      ...contestData,
+      questions: [
+        ...contestData.questions,
+        {
+          type: 'mcq' as 'mcq' | 'task',
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          points: 10,
+          order: contestData.questions.length,
+          taskDescription: '',
+          taskType: 'text' as 'photo' | 'text' | 'trivia',
+        },
+      ],
+    });
+  };
+
+  const updateQuestion = (index: number, field: string, value: any) => {
+    const newQuestions = [...contestData.questions];
+    newQuestions[index] = { ...newQuestions[index], [field]: value };
+    setContestData({ ...contestData, questions: newQuestions });
+  };
+
+  const updateOption = (qIndex: number, oIndex: number, value: string) => {
+    const newQuestions = [...contestData.questions];
+    newQuestions[qIndex].options[oIndex] = value;
+    setContestData({ ...contestData, questions: newQuestions });
+  };
+
+  const removeQuestion = (index: number) => {
+    const newQuestions = contestData.questions.filter((_, i) => i !== index);
+    setContestData({ ...contestData, questions: newQuestions });
+  };
 
   const hasPermission = user?.role === 'super_admin' || 
     (user?.role === 'admin' && user?.permissions?.includes('quiz_contest_management'));
@@ -145,33 +183,94 @@ export default function AdminContestsManagement() {
         ) : (
           <View style={{ padding: 16, gap: 12 }}>
             {adminContests.map((contest: any) => (
-              <View
+              <TouchableOpacity
                 key={contest._id}
+                onPress={() => {
+                  const { router } = require('expo-router');
+                  router.push({
+                    pathname: '/(admin)/contest-details',
+                    params: { contestId: contest._id },
+                  } as any);
+                }}
                 style={{
                   backgroundColor: colors.surface,
                   borderRadius: 12,
                   padding: 16,
                 }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
-                  {contest.title}
-                </Text>
-                <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
-                  {contest.status.toUpperCase()} • {contest.participantCount} participants
-                </Text>
-                <TouchableOpacity
-                  onPress={() => handleDeleteContest(contest._id, contest.title)}
-                  style={{
-                    backgroundColor: '#EF4444',
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    alignItems: 'center',
-                    marginTop: 12,
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>Delete</Text>
-                </TouchableOpacity>
-              </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
+                      {contest.title}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
+                      {new Date(contest.startTime).toLocaleDateString()} - {new Date(contest.endTime).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      backgroundColor: contest.status === 'active' ? '#10B981' : contest.status === 'upcoming' ? '#3B82F6' : '#6B7280',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                      {contest.status.toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="help-circle" size={16} color="#3B82F6" />
+                    <Text style={{ marginLeft: 4, fontSize: 13, color: colors.text }}>
+                      {contest.questions.length} Questions
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="people" size={16} color="#10B981" />
+                    <Text style={{ marginLeft: 4, fontSize: 13, color: colors.text }}>
+                      {contest.participantCount} Participants
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="star" size={16} color="#F59E0B" />
+                    <Text style={{ marginLeft: 4, fontSize: 13, color: colors.text }}>
+                      {contest.totalPoints} Points
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDeleteContest(contest._id, contest.title);
+                    }}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#EF4444',
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>Delete</Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#3B82F6',
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>View Details</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -187,26 +286,215 @@ export default function AdminContestsManagement() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <TextInput
                 style={{ backgroundColor: colors.background, padding: 12, borderRadius: 8, marginBottom: 12, color: colors.text }}
                 placeholder="Contest Title *"
+                placeholderTextColor={colors.textSecondary}
                 value={contestData.title}
                 onChangeText={(text) => setContestData({ ...contestData, title: text })}
               />
               <TextInput
                 style={{ backgroundColor: colors.background, padding: 12, borderRadius: 8, marginBottom: 12, color: colors.text }}
                 placeholder="Description"
+                placeholderTextColor={colors.textSecondary}
                 value={contestData.description}
                 onChangeText={(text) => setContestData({ ...contestData, description: text })}
                 multiline
               />
+
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                    Start Time
+                  </Text>
+                  <TextInput
+                    style={{ backgroundColor: colors.background, padding: 12, borderRadius: 8, color: colors.text }}
+                    placeholder="YYYY-MM-DDTHH:MM"
+                    placeholderTextColor={colors.textSecondary}
+                    value={contestData.startTime}
+                    onChangeText={(text) => setContestData({ ...contestData, startTime: text })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                    End Time
+                  </Text>
+                  <TextInput
+                    style={{ backgroundColor: colors.background, padding: 12, borderRadius: 8, color: colors.text }}
+                    placeholder="YYYY-MM-DDTHH:MM"
+                    placeholderTextColor={colors.textSecondary}
+                    value={contestData.endTime}
+                    onChangeText={(text) => setContestData({ ...contestData, endTime: text })}
+                  />
+                </View>
+              </View>
+
               <TextInput
                 style={{ backgroundColor: colors.background, padding: 12, borderRadius: 8, marginBottom: 12, color: colors.text }}
                 placeholder="Prize Description"
+                placeholderTextColor={colors.textSecondary}
                 value={contestData.prize.description}
                 onChangeText={(text) => setContestData({ ...contestData, prize: { ...contestData.prize, description: text } })}
               />
+
+              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12, marginTop: 8 }}>Questions</Text>
+
+              {contestData.questions.map((q, qIndex) => (
+                <View key={qIndex} style={{ backgroundColor: colors.background, padding: 16, borderRadius: 12, marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                      Question {qIndex + 1}
+                    </Text>
+                    {contestData.questions.length > 1 && (
+                      <TouchableOpacity onPress={() => removeQuestion(qIndex)}>
+                        <Ionicons name="trash" size={20} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
+                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => updateQuestion(qIndex, 'type', 'mcq')}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: q.type === 'mcq' ? '#3B82F6' : colors.surface,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ color: q.type === 'mcq' ? 'white' : colors.text, fontSize: 13, fontWeight: '600' }}>
+                        MCQ
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => updateQuestion(qIndex, 'type', 'task')}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: q.type === 'task' ? '#8B5CF6' : colors.surface,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ color: q.type === 'task' ? 'white' : colors.text, fontSize: 13, fontWeight: '600' }}>
+                        Task
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <TextInput
+                    style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, marginBottom: 8, color: colors.text }}
+                    placeholder="Question text *"
+                    placeholderTextColor={colors.textSecondary}
+                    value={q.question}
+                    onChangeText={(text) => updateQuestion(qIndex, 'question', text)}
+                    multiline
+                  />
+
+                  {q.type === 'mcq' ? (
+                    <>
+                      {q.options.map((opt, oIndex) => (
+                        <View key={oIndex} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                          <TouchableOpacity
+                            onPress={() => updateQuestion(qIndex, 'correctAnswer', oIndex)}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 12,
+                              backgroundColor: q.correctAnswer === oIndex ? '#10B981' : colors.surface,
+                              borderWidth: 2,
+                              borderColor: q.correctAnswer === oIndex ? '#10B981' : colors.textSecondary,
+                              marginRight: 8,
+                            }}
+                          />
+                          <TextInput
+                            style={{ flex: 1, backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                            placeholder={`Option ${oIndex + 1} *`}
+                            placeholderTextColor={colors.textSecondary}
+                            value={opt}
+                            onChangeText={(text) => updateOption(qIndex, oIndex, text)}
+                          />
+                        </View>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <TextInput
+                        style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, marginBottom: 8, color: colors.text }}
+                        placeholder="Task Description"
+                        placeholderTextColor={colors.textSecondary}
+                        value={q.taskDescription || ''}
+                        onChangeText={(text) => updateQuestion(qIndex, 'taskDescription', text)}
+                        multiline
+                      />
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity
+                          onPress={() => updateQuestion(qIndex, 'taskType', 'photo')}
+                          style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            backgroundColor: q.taskType === 'photo' ? '#8B5CF6' : colors.surface,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Text style={{ color: q.taskType === 'photo' ? 'white' : colors.text, fontSize: 12 }}>
+                            Photo
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => updateQuestion(qIndex, 'taskType', 'text')}
+                          style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            backgroundColor: q.taskType === 'text' ? '#8B5CF6' : colors.surface,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Text style={{ color: q.taskType === 'text' ? 'white' : colors.text, fontSize: 12 }}>
+                            Text
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
+
+                  <View style={{ marginTop: 8 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 4 }}>
+                      Points
+                    </Text>
+                    <TextInput
+                      style={{ backgroundColor: colors.surface, padding: 10, borderRadius: 8, color: colors.text }}
+                      placeholder="10"
+                      placeholderTextColor={colors.textSecondary}
+                      value={q.points.toString()}
+                      onChangeText={(text) => updateQuestion(qIndex, 'points', parseInt(text) || 10)}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+              ))}
+
+              <TouchableOpacity
+                onPress={addQuestion}
+                style={{
+                  backgroundColor: colors.background,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  marginBottom: 16,
+                  borderWidth: 2,
+                  borderColor: '#3B82F6',
+                  borderStyle: 'dashed',
+                }}
+              >
+                <Text style={{ color: '#3B82F6', fontSize: 14, fontWeight: '600' }}>
+                  + Add Question
+                </Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleCreateContest}
@@ -216,10 +504,14 @@ export default function AdminContestsManagement() {
                   paddingVertical: 16,
                   borderRadius: 8,
                   alignItems: 'center',
-                  marginTop: 16,
+                  opacity: isAdminContestLoading ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>Create Contest</Text>
+                {isAdminContestLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>Create Contest</Text>
+                )}
               </TouchableOpacity>
             </ScrollView>
           </View>

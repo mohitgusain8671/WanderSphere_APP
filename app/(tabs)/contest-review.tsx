@@ -117,12 +117,10 @@ export default function ContestReviewScreen() {
                 if (!question) return null;
                 
                 const isCorrect = answer.isCorrect;
-                const userAnswer = question.options?.find((opt: any) => opt._id === answer.selectedOption);
-                const correctAnswer = question.options?.find((opt: any) => opt.isCorrect);
 
                 return (
                   <View
-                    key={answer._id}
+                    key={answer._id || `mcq-${index}`}
                     style={{
                       backgroundColor: colors.surface,
                       borderRadius: 12,
@@ -171,27 +169,32 @@ export default function ContestReviewScreen() {
 
                     {/* Options */}
                     <View style={{ gap: 8 }}>
-                      {question?.options?.map((option: any) => {
+                      {question?.options?.map((option: any, optIndex: number) => {
                         const isUserAnswer = option._id === answer.selectedOption;
                         const isCorrectOption = option.isCorrect;
                         
+                        // Default styling
                         let backgroundColor = colors.background;
-                        let borderColor = colors.background;
+                        let borderColor = isDarkMode ? 'rgba(100, 116, 139, 0.3)' : 'rgba(203, 213, 225, 0.5)';
                         let textColor = colors.text;
                         
+                        // Correct answer - always highlight in green
                         if (isCorrectOption) {
                           backgroundColor = isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)';
                           borderColor = '#10B981';
-                          textColor = '#10B981';
-                        } else if (isUserAnswer && !isCorrect) {
+                          textColor = colors.text;
+                        }
+                        
+                        // User's wrong answer - highlight in red
+                        if (isUserAnswer && !isCorrect) {
                           backgroundColor = isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)';
                           borderColor = '#EF4444';
-                          textColor = '#EF4444';
+                          textColor = colors.text;
                         }
 
                         return (
                           <View
-                            key={option._id}
+                            key={option._id || `opt-${index}-${optIndex}`}
                             style={{
                               backgroundColor,
                               borderWidth: 2,
@@ -202,23 +205,23 @@ export default function ContestReviewScreen() {
                               alignItems: 'center',
                             }}
                           >
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ fontSize: 14, color: textColor, fontWeight: '600' }}>
-                                {option.text}
-                              </Text>
-                            </View>
+                            <Text style={{ fontSize: 14, color: textColor, fontWeight: '500', flex: 1 }}>
+                              {option.text || option || `Option ${optIndex + 1}`}
+                            </Text>
+                            
                             {isCorrectOption && (
-                              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                                <Text style={{ marginLeft: 4, fontSize: 12, color: '#10B981', fontWeight: '600' }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                                <Text style={{ marginLeft: 4, fontSize: 11, color: '#10B981', fontWeight: '700' }}>
                                   Correct
                                 </Text>
                               </View>
                             )}
+                            
                             {isUserAnswer && !isCorrect && (
-                              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Ionicons name="close-circle" size={20} color="#EF4444" />
-                                <Text style={{ marginLeft: 4, fontSize: 12, color: '#EF4444', fontWeight: '600' }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                                <Ionicons name="close-circle" size={18} color="#EF4444" />
+                                <Text style={{ marginLeft: 4, fontSize: 11, color: '#EF4444', fontWeight: '700' }}>
                                   Your Answer
                                 </Text>
                               </View>
@@ -246,7 +249,7 @@ export default function ContestReviewScreen() {
 
                 return (
                   <View
-                    key={answer._id}
+                    key={answer._id || `task-${index}`}
                     style={{
                       backgroundColor: colors.surface,
                       borderRadius: 12,
@@ -308,18 +311,41 @@ export default function ContestReviewScreen() {
                             width: '100%',
                             height: 200,
                             borderRadius: 8,
-                            marginBottom: 8,
                           }}
                           resizeMode="cover"
                         />
                       )}
                       
-                      {answer.textAnswer && (
+                      {answer.textAnswer && !answer.photoUrl && (
                         <Text style={{ fontSize: 14, color: colors.text, lineHeight: 20 }}>
                           {answer.textAnswer}
                         </Text>
                       )}
                     </View>
+
+                    {/* Admin Review */}
+                    {answer.adminComment && (
+                      <View
+                        style={{
+                          backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.1)',
+                          borderLeftWidth: 3,
+                          borderLeftColor: '#8B5CF6',
+                          padding: 12,
+                          borderRadius: 8,
+                          marginTop: 12,
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                          <Ionicons name="person-circle" size={16} color="#8B5CF6" />
+                          <Text style={{ marginLeft: 6, fontSize: 12, fontWeight: '700', color: '#8B5CF6' }}>
+                            Admin Review
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18 }}>
+                          {answer.adminComment}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 );
               })}

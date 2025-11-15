@@ -231,7 +231,10 @@ export const CONTEST_ROUTES = {
     ADMIN_UPDATE: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}`,
     ADMIN_DELETE: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}`,
     ADMIN_ALL: `${API_BASE_URL}/contest/admin/all`,
+    ADMIN_GET: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}`,
     ADMIN_SUBMISSIONS: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}/submissions`,
+    ADMIN_STATS: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}/stats`,
+    ADMIN_REVIEW: (contestId: string, submissionId: string) => `${API_BASE_URL}/contest/admin/${contestId}/submissions/${submissionId}/review`,
     // User
     ACTIVE: `${API_BASE_URL}/contest/active`,
     GET: (contestId: string) => `${API_BASE_URL}/contest/${contestId}`,

@@ -28,7 +28,14 @@ export default function ContestDetailsScreen() {
 
   useEffect(() => {
     loadContest();
-  }, []);
+    
+    // Refresh when screen comes into focus
+    const unsubscribe = () => {
+      loadContest();
+    };
+    
+    return () => {};
+  }, [contestId]);
 
   const loadContest = async () => {
     await getContestById(contestId as string);
