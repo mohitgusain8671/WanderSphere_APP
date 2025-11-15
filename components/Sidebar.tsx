@@ -56,20 +56,28 @@ const Sidebar: React.FC<SidebarProps> = ({ visible, onClose, onNavigate }) => {
       screen: 'ItineraryList'
     },
     {
-      id: 'popular-destinations',
-      title: 'Popular Destinations',
-      subtitle: 'Trending travel spots',
-      icon: 'trending-up',
+      id: 'daily-quiz',
+      title: 'Daily Quiz',
+      subtitle: 'Test your travel knowledge',
+      icon: 'trophy',
       color: '#F59E0B',
-      screen: 'PopularDestinations'
+      screen: 'Quiz'
     },
     {
-      id: 'travel-inspiration',
-      title: 'Travel Inspiration',
-      subtitle: 'Daily wanderlust & tips',
-      icon: 'bulb',
+      id: 'contests',
+      title: 'Contests',
+      subtitle: 'Compete and win prizes',
+      icon: 'ribbon',
       color: '#8B5CF6',
-      screen: 'TravelInspiration'
+      screen: 'Contests'
+    },
+    {
+      id: 'leaderboard',
+      title: 'Leaderboard',
+      subtitle: 'See top performers',
+      icon: 'podium',
+      color: '#10B981',
+      screen: 'Leaderboard'
     },
     {
       id: 'travel-budget',

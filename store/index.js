@@ -10,6 +10,9 @@ import { createItinerarySlice } from "./slices/itinerary-slice";
 import { createMessageSlice } from "./slices/message-slice";
 import { createAdminSlice } from "./slices/admin-slice";
 import { createQuerySlice } from "./slices/query-slice";
+import { createQuizSlice } from "./slices/quiz-slice";
+import { createContestSlice } from "./slices/contest-slice";
+import { createLeaderboardSlice } from "./slices/leaderboard-slice";
 
 export const useAppStore = create()((...a) => ({
   ...createAuthSlice(...a),
@@ -23,4 +26,7 @@ export const useAppStore = create()((...a) => ({
   ...createMessageSlice(...a),
   ...createAdminSlice(...a),
   ...createQuerySlice(...a),
+  ...createQuizSlice(...a),
+  ...createContestSlice(...a),
+  ...createLeaderboardSlice(...a),
 }));

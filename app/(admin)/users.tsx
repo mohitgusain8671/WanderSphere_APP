@@ -833,6 +833,7 @@ function getPermissionDescription(permission: string): string {
     admin_management: 'Manage other admin accounts',
     analytics_view: 'View analytics and reports',
     system_settings: 'Modify system settings',
+    quiz_contest_management: 'Create and manage quizzes and contests',
   };
   return descriptions[permission] || 'Manage this feature';
 }

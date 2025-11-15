@@ -170,6 +170,81 @@ export default function TabLayout() {
             href: null,
           }}
         />
+
+        {/* Quiz & Contest screens - hidden from tab bar */}
+        <Tabs.Screen
+          name="quiz"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="quiz-play"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="quiz-result"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="quiz-history"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="quiz-review"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contests"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contest-history"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contest-review"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contest-details"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contest-play"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="contest-result"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="leaderboard"
+          options={{
+            href: null,
+          }}
+        />
+
         {/* Message screens - hidden from tab bar */}
         <Tabs.Screen
           name="messages"

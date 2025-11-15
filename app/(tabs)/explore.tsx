@@ -79,6 +79,21 @@ export default function ExploreScreen() {
       case 'BudgetCalculator':
         setShowBudgetCalculator(true);
         break;
+      case 'Quiz':
+        // Navigate to Quiz screen
+        const { router } = require('expo-router');
+        router.push('/(tabs)/quiz');
+        break;
+      case 'Contests':
+        // Navigate to Contests screen
+        const { router: contestRouter } = require('expo-router');
+        contestRouter.push('/(tabs)/contests');
+        break;
+      case 'Leaderboard':
+        // Navigate to Leaderboard screen
+        const { router: leaderboardRouter } = require('expo-router');
+        leaderboardRouter.push('/(tabs)/leaderboard');
+        break;
       case 'explore':
         // Return to explore screen
         break;

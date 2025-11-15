@@ -185,7 +185,8 @@ export const ADMIN_PERMISSIONS = {
     EMAIL_MANAGEMENT: 'email_management',
     ADMIN_MANAGEMENT: 'admin_management',
     ANALYTICS_VIEW: 'analytics_view',
-    SYSTEM_SETTINGS: 'system_settings'
+    SYSTEM_SETTINGS: 'system_settings',
+    QUIZ_CONTEST_MANAGEMENT: 'quiz_contest_management'
 };
 
 // Admin Routes
@@ -206,6 +207,46 @@ export const ADMIN_ROUTES = {
     EXPORT_DATA: (type: string) => `${API_BASE_URL}/admin/export/${type}`,
     BROADCAST_EMAIL: `${API_BASE_URL}/admin/broadcast-email`,
     SYSTEM_HEALTH: `${API_BASE_URL}/admin/system-health`
+};
+
+// Quiz Routes
+export const QUIZ_ROUTES = {
+    // Admin
+    ADMIN_CREATE: `${API_BASE_URL}/quiz/admin/create`,
+    ADMIN_UPDATE: (quizId: string) => `${API_BASE_URL}/quiz/admin/${quizId}`,
+    ADMIN_DELETE: (quizId: string) => `${API_BASE_URL}/quiz/admin/${quizId}`,
+    ADMIN_ALL: `${API_BASE_URL}/quiz/admin/all`,
+    ADMIN_GET: (quizId: string) => `${API_BASE_URL}/quiz/admin/${quizId}`,
+    // User
+    TODAY: `${API_BASE_URL}/quiz/today`,
+    ATTEMPT: `${API_BASE_URL}/quiz/attempt`,
+    MY_HISTORY: `${API_BASE_URL}/quiz/my-history`,
+    CHECK_TODAY: `${API_BASE_URL}/quiz/check-today`,
+};
+
+// Contest Routes
+export const CONTEST_ROUTES = {
+    // Admin
+    ADMIN_CREATE: `${API_BASE_URL}/contest/admin/create`,
+    ADMIN_UPDATE: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}`,
+    ADMIN_DELETE: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}`,
+    ADMIN_ALL: `${API_BASE_URL}/contest/admin/all`,
+    ADMIN_SUBMISSIONS: (contestId: string) => `${API_BASE_URL}/contest/admin/${contestId}/submissions`,
+    // User
+    ACTIVE: `${API_BASE_URL}/contest/active`,
+    GET: (contestId: string) => `${API_BASE_URL}/contest/${contestId}`,
+    START: (contestId: string) => `${API_BASE_URL}/contest/${contestId}/start`,
+    PROGRESS: (contestId: string) => `${API_BASE_URL}/contest/${contestId}/progress`,
+    SUBMIT: (contestId: string) => `${API_BASE_URL}/contest/${contestId}/submit`,
+    MY_HISTORY: `${API_BASE_URL}/contest/my/history`,
+};
+
+// Leaderboard Routes
+export const LEADERBOARD_ROUTES = {
+    DAILY: `${API_BASE_URL}/leaderboard/daily`,
+    OVERALL: `${API_BASE_URL}/leaderboard/overall`,
+    CONTEST: (contestId: string) => `${API_BASE_URL}/leaderboard/contest/${contestId}`,
+    MY_RANK: `${API_BASE_URL}/leaderboard/my-rank`,
 };
 
 // Budget Categories

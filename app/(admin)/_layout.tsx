@@ -17,6 +17,8 @@ export default function AdminLayout() {
     { name: 'Posts', path: '/(admin)/posts', icon: 'images' },
     { name: 'Stories', path: '/(admin)/stories', icon: 'book' },
     { name: 'Queries', path: '/(admin)/queries', icon: 'chatbubbles' },
+    { name: 'Quizzes', path: '/(admin)/quizzes', icon: 'help-circle' },
+    { name: 'Contests', path: '/(admin)/contests', icon: 'trophy' },
   ];
 
   const handleNavigate = (path: string) => {
@@ -153,6 +155,8 @@ export default function AdminLayout() {
         <Stack.Screen name="posts" />
         <Stack.Screen name="stories" />
         <Stack.Screen name="queries" />
+        <Stack.Screen name="quizzes" />
+        <Stack.Screen name="contests" />
       </Stack>
     </SafeAreaView>
   );
