@@ -118,6 +118,34 @@ export const createContestSlice = (set, get) => ({
     }
   },
 
+  // Upload Contest Task Photo
+  uploadContestTaskPhoto: async (imageUri) => {
+    set({ isContestLoading: true, contestError: null });
+    try {
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `contest_task_${Date.now()}.jpg`,
+      });
+
+      const response = await api.post(CONTEST_ROUTES.UPLOAD_TASK_PHOTO, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      if (response.data.success) {
+        set({ isContestLoading: false });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to upload photo';
+      set({ contestError: errorMessage, isContestLoading: false });
+      return { success: false, error: errorMessage };
+    }
+  },
+
   // Submit Contest
   submitContest: async (contestId, answers) => {
     set({ isContestLoading: true, contestError: null });

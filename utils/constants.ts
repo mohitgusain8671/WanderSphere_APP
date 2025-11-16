@@ -186,7 +186,8 @@ export const ADMIN_PERMISSIONS = {
     ADMIN_MANAGEMENT: 'admin_management',
     ANALYTICS_VIEW: 'analytics_view',
     SYSTEM_SETTINGS: 'system_settings',
-    QUIZ_CONTEST_MANAGEMENT: 'quiz_contest_management'
+    QUIZ_CONTEST_MANAGEMENT: 'quiz_contest_management',
+    BUDDY_MANAGEMENT: 'buddy_management'
 };
 
 // Admin Routes
@@ -242,6 +243,8 @@ export const CONTEST_ROUTES = {
     PROGRESS: (contestId: string) => `${API_BASE_URL}/contest/${contestId}/progress`,
     SUBMIT: (contestId: string) => `${API_BASE_URL}/contest/${contestId}/submit`,
     MY_HISTORY: `${API_BASE_URL}/contest/my/history`,
+    // File Upload
+    UPLOAD_TASK_PHOTO: `${API_BASE_URL}/contest/upload/task-photo`,
 };
 
 // Leaderboard Routes
@@ -250,6 +253,39 @@ export const LEADERBOARD_ROUTES = {
     OVERALL: `${API_BASE_URL}/leaderboard/overall`,
     CONTEST: (contestId: string) => `${API_BASE_URL}/leaderboard/contest/${contestId}`,
     MY_RANK: `${API_BASE_URL}/leaderboard/my-rank`,
+};
+
+// Local Buddy Routes
+export const BUDDY_ROUTES = {
+    // User Routes
+    REGISTER: `${API_BASE_URL}/buddy/register`,
+    UPDATE_REGISTRATION: `${API_BASE_URL}/buddy/registration/update`,
+    MY_PROFILE: `${API_BASE_URL}/buddy/my-profile`,
+    UPDATE_PROFILE: `${API_BASE_URL}/buddy/profile/update`,
+    SEARCH: `${API_BASE_URL}/buddy/search`,
+    GET_BUDDY: (buddyId: string) => `${API_BASE_URL}/buddy/${buddyId}`,
+    
+    // Booking Routes
+    CREATE_BOOKING: `${API_BASE_URL}/buddy/booking/create`,
+    CREATE_BOOKING_BY_BUDDY: `${API_BASE_URL}/buddy/booking/create-by-buddy`,
+    RESPOND_BOOKING: (bookingId: string) => `${API_BASE_URL}/buddy/booking/${bookingId}/respond`,
+    UPDATE_BOOKING_STATUS: (bookingId: string) => `${API_BASE_URL}/buddy/booking/${bookingId}/status`,
+    RATE_BOOKING: (bookingId: string) => `${API_BASE_URL}/buddy/booking/${bookingId}/rate`,
+    USER_BOOKING_HISTORY: `${API_BASE_URL}/buddy/booking/user/history`,
+    BUDDY_BOOKING_HISTORY: `${API_BASE_URL}/buddy/booking/buddy/history`,
+    GET_BOOKING: (bookingId: string) => `${API_BASE_URL}/buddy/booking/${bookingId}/details`,
+    
+    // Report
+    REPORT_BUDDY: `${API_BASE_URL}/buddy/report`,
+    
+    // Admin Routes
+    ADMIN_REGISTRATIONS: `${API_BASE_URL}/buddy/admin/registrations`,
+    ADMIN_UPDATE_STATUS: (buddyId: string) => `${API_BASE_URL}/buddy/admin/${buddyId}/status`,
+    ADMIN_BAN_BUDDY: (buddyId: string) => `${API_BASE_URL}/buddy/admin/${buddyId}/ban`,
+    ADMIN_BOOKINGS: `${API_BASE_URL}/buddy/admin/bookings`,
+    ADMIN_REPORTS: `${API_BASE_URL}/buddy/admin/reports`,
+    ADMIN_UPDATE_REPORT: (reportId: string) => `${API_BASE_URL}/buddy/admin/reports/${reportId}`,
+    ADMIN_STATISTICS: `${API_BASE_URL}/buddy/admin/statistics`,
 };
 
 // Budget Categories
