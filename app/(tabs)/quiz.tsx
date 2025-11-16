@@ -194,7 +194,9 @@ export default function QuizScreen() {
               )}
             </View>
 
-            {/* Quick Links */}
+          </View>
+        )}
+        {/* Quick Links */}
             <View style={{ marginTop: 20, gap: 12 }}>
               <TouchableOpacity
                 onPress={() => router.push('/(tabs)/quiz-history' as any)}
@@ -236,8 +238,6 @@ export default function QuizScreen() {
                 <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
-          </View>
-        )}
       </ScrollView>
 
       {/* Instructions Modal */}
