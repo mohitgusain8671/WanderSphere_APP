@@ -24,10 +24,14 @@ export default function ContestPlayScreen() {
     isContestLoading,
     saveContestProgress,
     submitContest,
+    uploadContestTaskPhoto,
   } = useAppStore();
 
   const [answers, setAnswers] = useState<any[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
+  const [isUploading, setIsUploading] = useState<{ [key: number]: boolean }>({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Check if contest is started
@@ -45,12 +49,24 @@ export default function ContestPlayScreen() {
       return;
     }
 
-    if (contestProgress?.answers && contestProgress.answers.length > 0) {
-      setAnswers(contestProgress.answers);
-    } else if (currentContest?.questions) {
-      setAnswers(currentContest.questions.map(() => ({})));
+    // Only initialize answers once when component mounts
+    if (!isInitialized && currentContest?.questions) {
+      // Create empty answer array for all questions
+      const initialAnswers = currentContest.questions.map(() => ({}));
+      
+      // If there's saved progress, merge it with the empty array
+      if (contestProgress?.answers && contestProgress.answers.length > 0) {
+        contestProgress.answers.forEach((savedAnswer: any) => {
+          if (savedAnswer.questionIndex !== undefined) {
+            initialAnswers[savedAnswer.questionIndex] = savedAnswer;
+          }
+        });
+      }
+      
+      setAnswers(initialAnswers);
+      setIsInitialized(true);
     }
-  }, [contestProgress, currentContest]);
+  }, [contestProgress, currentContest, isInitialized]);
 
   const handleAnswerChange = (index: number, answer: any) => {
     const newAnswers = [...answers];
@@ -74,13 +90,55 @@ export default function ContestPlayScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      // For now, store the local URI. In production, you'd upload to a server
-      handleAnswerChange(index, {
-        questionIndex: index,
-        taskSubmission: result.assets[0].uri,
-        taskSubmissionType: 'photo',
-        type: 'task',
-      });
+      const imageUri = result.assets[0].uri;
+      
+      // Set uploading state
+      setIsUploading(prev => ({ ...prev, [index]: true }));
+      setUploadProgress(prev => ({ ...prev, [index]: 0 }));
+      
+      // Simulate progress (since axios doesn't provide real progress for FormData in React Native)
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const currentProgress = prev[index] || 0;
+          if (currentProgress < 90) {
+            return { ...prev, [index]: currentProgress + 10 };
+          }
+          return prev;
+        });
+      }, 200);
+      
+      try {
+        // Upload to S3
+        const uploadResult = await uploadContestTaskPhoto(imageUri);
+        
+        clearInterval(progressInterval);
+        setUploadProgress(prev => ({ ...prev, [index]: 100 }));
+        
+        if (uploadResult.success) {
+          // Store the S3 URL instead of local URI
+          handleAnswerChange(index, {
+            questionIndex: index,
+            taskSubmission: uploadResult.data.url,
+            taskSubmissionType: 'photo',
+            type: 'task',
+          });
+          
+          // Clear progress after a short delay
+          setTimeout(() => {
+            setIsUploading(prev => ({ ...prev, [index]: false }));
+            setUploadProgress(prev => ({ ...prev, [index]: 0 }));
+          }, 1000);
+        } else {
+          setIsUploading(prev => ({ ...prev, [index]: false }));
+          setUploadProgress(prev => ({ ...prev, [index]: 0 }));
+          Alert.alert('Upload Failed', uploadResult.error || 'Failed to upload photo. Please try again.');
+        }
+      } catch (error) {
+        clearInterval(progressInterval);
+        setIsUploading(prev => ({ ...prev, [index]: false }));
+        setUploadProgress(prev => ({ ...prev, [index]: 0 }));
+        Alert.alert('Upload Failed', 'An error occurred while uploading. Please try again.');
+      }
     }
   };
 
@@ -252,7 +310,46 @@ export default function ContestPlayScreen() {
                   
                   {question.taskType === 'photo' ? (
                     <View>
-                      {answers[index]?.taskSubmission ? (
+                      {isUploading[index] ? (
+                        <View
+                          style={{
+                            backgroundColor: colors.background,
+                            padding: 40,
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            borderWidth: 2,
+                            borderColor: '#8B5CF6',
+                          }}
+                        >
+                          <ActivityIndicator size="large" color="#8B5CF6" />
+                          <Text style={{ marginTop: 16, fontSize: 14, color: colors.text, fontWeight: '600' }}>
+                            Uploading Photo...
+                          </Text>
+                          <View style={{ width: '100%', marginTop: 12 }}>
+                            <View style={{ 
+                              height: 8, 
+                              backgroundColor: colors.surface, 
+                              borderRadius: 4, 
+                              overflow: 'hidden' 
+                            }}>
+                              <View style={{ 
+                                height: '100%', 
+                                width: `${uploadProgress[index] || 0}%`, 
+                                backgroundColor: '#8B5CF6', 
+                                borderRadius: 4 
+                              }} />
+                            </View>
+                            <Text style={{ 
+                              marginTop: 4, 
+                              fontSize: 12, 
+                              color: colors.textSecondary, 
+                              textAlign: 'center' 
+                            }}>
+                              {uploadProgress[index] || 0}%
+                            </Text>
+                          </View>
+                        </View>
+                      ) : answers[index]?.taskSubmission ? (
                         <View>
                           <Image
                             source={{ uri: answers[index].taskSubmission }}
@@ -266,11 +363,13 @@ export default function ContestPlayScreen() {
                           />
                           <TouchableOpacity
                             onPress={() => handleImagePick(index)}
+                            disabled={isUploading[index]}
                             style={{
                               backgroundColor: '#8B5CF6',
                               paddingVertical: 12,
                               borderRadius: 8,
                               alignItems: 'center',
+                              opacity: isUploading[index] ? 0.5 : 1,
                             }}
                           >
                             <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
@@ -281,6 +380,7 @@ export default function ContestPlayScreen() {
                       ) : (
                         <TouchableOpacity
                           onPress={() => handleImagePick(index)}
+                          disabled={isUploading[index]}
                           style={{
                             backgroundColor: colors.background,
                             padding: 40,
@@ -289,6 +389,7 @@ export default function ContestPlayScreen() {
                             borderWidth: 2,
                             borderColor: '#8B5CF6',
                             borderStyle: 'dashed',
+                            opacity: isUploading[index] ? 0.5 : 1,
                           }}
                         >
                           <Ionicons name="camera" size={48} color="#8B5CF6" />
@@ -328,16 +429,31 @@ export default function ContestPlayScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={{ backgroundColor: colors.surface, padding: 20, gap: 12 }}>
+      <View style={{ backgroundColor: colors.surface, padding: 20, gap: 12, marginBottom: 50 }}>
+        {Object.values(isUploading).some(uploading => uploading) && (
+          <View style={{ 
+            backgroundColor: '#FEF3C7', 
+            padding: 12, 
+            borderRadius: 8, 
+            flexDirection: 'row', 
+            alignItems: 'center' 
+          }}>
+            <Ionicons name="cloud-upload" size={20} color="#F59E0B" />
+            <Text style={{ marginLeft: 8, fontSize: 12, color: '#92400E', flex: 1 }}>
+              Photo upload in progress. Please wait before submitting.
+            </Text>
+          </View>
+        )}
+        
         <TouchableOpacity
           onPress={handleSaveProgress}
-          disabled={!hasUnsavedChanges || isContestLoading}
+          disabled={!hasUnsavedChanges || isContestLoading || Object.values(isUploading).some(uploading => uploading)}
           style={{
             backgroundColor: hasUnsavedChanges ? '#F59E0B' : colors.background,
             paddingVertical: 14,
             borderRadius: 12,
             alignItems: 'center',
-            opacity: hasUnsavedChanges ? 1 : 0.5,
+            opacity: (hasUnsavedChanges && !Object.values(isUploading).some(uploading => uploading)) ? 1 : 0.5,
           }}
         >
           {isContestLoading ? (
@@ -351,12 +467,13 @@ export default function ContestPlayScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit}
-          disabled={isContestLoading}
+          disabled={isContestLoading || Object.values(isUploading).some(uploading => uploading)}
           style={{
             backgroundColor: '#3B82F6',
             paddingVertical: 16,
             borderRadius: 12,
             alignItems: 'center',
+            opacity: Object.values(isUploading).some(uploading => uploading) ? 0.5 : 1,
           }}
         >
           <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>

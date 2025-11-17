@@ -394,6 +394,54 @@ export default function AddFriendsScreen() {
         </View>
       </View>
 
+      {/* Discover Section - Only show in search tab */}
+      {activeTab === 'search' && !searchQuery.trim() && (
+        <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 12 }}>
+            🌟 Discover More
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              onPress={() => router.push('/(buddy)/user-dashboard' as any)}
+              style={{
+                flex: 1,
+                backgroundColor: '#3B82F6',
+                borderRadius: 16,
+                padding: 16,
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="people" size={32} color="white" />
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 14, marginTop: 8 }}>
+                Find Local Buddy
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 4, textAlign: 'center' }}>
+                Connect with local guides
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={() => router.push('/(buddy)/buddy-dashboard' as any)}
+              style={{
+                flex: 1,
+                backgroundColor: '#8B5CF6',
+                borderRadius: 16,
+                padding: 16,
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="briefcase" size={32} color="white" />
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 14, marginTop: 8 }}>
+                Become a Buddy
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 4, textAlign: 'center' }}>
+                Offer your local expertise
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       {/* Content */}
       <View className="flex-1 px-4">
         <FlatList

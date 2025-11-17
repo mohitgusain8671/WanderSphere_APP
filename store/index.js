@@ -13,6 +13,7 @@ import { createQuerySlice } from "./slices/query-slice";
 import { createQuizSlice } from "./slices/quiz-slice";
 import { createContestSlice } from "./slices/contest-slice";
 import { createLeaderboardSlice } from "./slices/leaderboard-slice";
+import { createBuddySlice } from "./slices/buddy-slice";
 
 export const useAppStore = create()((...a) => ({
   ...createAuthSlice(...a),
@@ -29,4 +30,5 @@ export const useAppStore = create()((...a) => ({
   ...createQuizSlice(...a),
   ...createContestSlice(...a),
   ...createLeaderboardSlice(...a),
+  ...createBuddySlice(...a),
 }));

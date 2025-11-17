@@ -19,6 +19,9 @@ export default function AdminLayout() {
     { name: 'Queries', path: '/(admin)/queries', icon: 'chatbubbles' },
     { name: 'Quizzes', path: '/(admin)/quizzes', icon: 'help-circle' },
     { name: 'Contests', path: '/(admin)/contests', icon: 'trophy' },
+    { name: 'Buddy Management', path: '/(admin)/buddy-management', icon: 'person-circle' },
+    { name: 'Buddy Bookings', path: '/(admin)/buddy-bookings-admin', icon: 'calendar' },
+    { name: 'Buddy Reports', path: '/(admin)/buddy-reports-admin', icon: 'flag' },
   ];
 
   const handleNavigate = (path: string) => {
@@ -159,6 +162,10 @@ export default function AdminLayout() {
         <Stack.Screen name="quiz-details" />
         <Stack.Screen name="contests" />
         <Stack.Screen name="contest-details" />
+        <Stack.Screen name="buddy-management" />
+        <Stack.Screen name="buddy-bookings-admin" />
+        <Stack.Screen name="buddy-reports-admin" />
+        <Stack.Screen name="buddy-details" />
       </Stack>
     </SafeAreaView>
   );

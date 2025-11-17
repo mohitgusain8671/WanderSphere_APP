@@ -314,4 +314,183 @@ export const createAdminSlice = (set, get) => ({
       systemHealth: null,
     });
   },
+
+  // ==================== BUDDY MANAGEMENT ====================
+  
+  // Buddy State
+  adminBuddies: [],
+  isAdminBuddiesLoading: false,
+  buddiesError: null,
+  buddiesPagination: null,
+  
+  adminBookings: [],
+  isAdminBookingsLoading: false,
+  bookingsError: null,
+  bookingsPagination: null,
+  
+  adminReports: [],
+  isAdminReportsLoading: false,
+  reportsError: null,
+  reportsPagination: null,
+  
+  buddyStatistics: null,
+
+  // Get All Buddy Registrations
+  getAllBuddyRegistrations: async (filters = {}) => {
+    set({ isAdminBuddiesLoading: true, buddiesError: null });
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`${require('../../utils/constants').BUDDY_ROUTES.ADMIN_REGISTRATIONS}?${params}`);
+      
+      if (response.data.success) {
+        set({
+          adminBuddies: response.data.data.buddies,
+          buddiesPagination: response.data.data.pagination,
+          isAdminBuddiesLoading: false,
+        });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to fetch buddy registrations';
+      set({ buddiesError: errorMsg, isAdminBuddiesLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Update Buddy Status (Approve/Reject)
+  updateBuddyStatus: async (buddyId, status, rejectionReason = '') => {
+    set({ isAdminBuddiesLoading: true, buddiesError: null });
+    try {
+      const response = await api.put(
+        require('../../utils/constants').BUDDY_ROUTES.ADMIN_UPDATE_STATUS(buddyId),
+        { status, rejectionReason }
+      );
+      
+      if (response.data.success) {
+        // Update buddy in list
+        set(state => ({
+          adminBuddies: state.adminBuddies.map(buddy =>
+            buddy._id === buddyId ? response.data.data.buddy : buddy
+          ),
+          isAdminBuddiesLoading: false,
+        }));
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to update buddy status';
+      set({ buddiesError: errorMsg, isAdminBuddiesLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Ban/Unban Buddy
+  banBuddy: async (buddyId, action, reason = '') => {
+    set({ isAdminBuddiesLoading: true, buddiesError: null });
+    try {
+      const response = await api.put(
+        require('../../utils/constants').BUDDY_ROUTES.ADMIN_BAN_BUDDY(buddyId),
+        { action, reason }
+      );
+      
+      if (response.data.success) {
+        // Update buddy in list
+        set(state => ({
+          adminBuddies: state.adminBuddies.map(buddy =>
+            buddy._id === buddyId ? response.data.data.buddy : buddy
+          ),
+          isAdminBuddiesLoading: false,
+        }));
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to ban/unban buddy';
+      set({ buddiesError: errorMsg, isAdminBuddiesLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Get All Bookings
+  getAllBookings: async (filters = {}) => {
+    set({ isAdminBookingsLoading: true, bookingsError: null });
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`${require('../../utils/constants').BUDDY_ROUTES.ADMIN_BOOKINGS}?${params}`);
+      
+      if (response.data.success) {
+        set({
+          adminBookings: response.data.data.bookings,
+          bookingsPagination: response.data.data.pagination,
+          isAdminBookingsLoading: false,
+        });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to fetch bookings';
+      set({ bookingsError: errorMsg, isAdminBookingsLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Get All Reports
+  getAllReports: async (filters = {}) => {
+    set({ isAdminReportsLoading: true, reportsError: null });
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`${require('../../utils/constants').BUDDY_ROUTES.ADMIN_REPORTS}?${params}`);
+      
+      if (response.data.success) {
+        set({
+          adminReports: response.data.data.reports,
+          reportsPagination: response.data.data.pagination,
+          isAdminReportsLoading: false,
+        });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to fetch reports';
+      set({ reportsError: errorMsg, isAdminReportsLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Update Report Status
+  updateReportStatus: async (reportId, status, adminNotes = '', actionTaken = 'none') => {
+    set({ isAdminReportsLoading: true, reportsError: null });
+    try {
+      const response = await api.put(
+        require('../../utils/constants').BUDDY_ROUTES.ADMIN_UPDATE_REPORT(reportId),
+        { status, adminNotes, actionTaken }
+      );
+      
+      if (response.data.success) {
+        // Update report in list
+        set(state => ({
+          adminReports: state.adminReports.map(report =>
+            report._id === reportId ? response.data.data.report : report
+          ),
+          isAdminReportsLoading: false,
+        }));
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to update report';
+      set({ reportsError: errorMsg, isAdminReportsLoading: false });
+      return { success: false, error: errorMsg };
+    }
+  },
+
+  // Get Buddy Statistics
+  getBuddyStatistics: async () => {
+    try {
+      const response = await api.get(require('../../utils/constants').BUDDY_ROUTES.ADMIN_STATISTICS);
+      
+      if (response.data.success) {
+        set({ buddyStatistics: response.data.data });
+        return { success: true, data: response.data.data };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to fetch buddy statistics';
+      return { success: false, error: errorMsg };
+    }
+  },
 });

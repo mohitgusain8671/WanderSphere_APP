@@ -248,6 +248,7 @@ export const createAuthSlice = (set, get) => ({
       await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
       await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
 
+      // Clear auth state
       set({
         user: null,
         accessToken: null,
@@ -256,6 +257,66 @@ export const createAuthSlice = (set, get) => ({
         isLoading: false,
         error: null,
       });
+
+      // Clear all other slices except theme
+      const state = get();
+      
+      // Clear posts
+      if (state.clearPosts) state.clearPosts();
+      
+      // Clear stories
+      if (state.clearStories) state.clearStories();
+      
+      // Clear friends
+      if (state.clearFriendsData) state.clearFriendsData();
+      
+      // Clear notifications
+      if (state.clearNotifications) state.clearNotifications();
+      
+      // Clear quiz
+      if (state.clearQuizState) state.clearQuizState();
+      
+      // Clear contest
+      if (state.clearContestState) state.clearContestState();
+      
+      // Clear leaderboard
+      if (state.clearLeaderboardState) state.clearLeaderboardState();
+      
+      // Clear query
+      if (state.clearQueryState) state.clearQueryState();
+      
+      // Clear itinerary
+      if (state.clearItineraryData) state.clearItineraryData();
+      
+      // Clear admin
+      if (state.clearAdminState) state.clearAdminState();
+      
+      // Clear wanderlust
+      if (state.setDestinations && state.setAdventureTip) {
+        state.setDestinations([]);
+        state.setAdventureTip(null);
+      }
+      
+      // Clear messages
+      if (state.setChats && state.setCurrentChat) {
+        state.setChats([]);
+        state.setCurrentChat(null);
+        set({ messages: {}, typingUsers: new Map() });
+      }
+      
+      // Clear buddy
+      if (state.myBuddyProfile !== undefined) {
+        set({
+          myBuddyProfile: null,
+          buddies: [],
+          selectedBuddy: null,
+          userBookings: [],
+          buddyBookings: [],
+          selectedBooking: null,
+          buddyPagination: null,
+          bookingPagination: null,
+        });
+      }
 
       return { success: true };
     } catch (error) {
