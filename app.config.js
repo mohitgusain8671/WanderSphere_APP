@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: 'MyApp',
+    name: 'WanderSphere',
     slug: 'MyApp',
     version: '1.0.0',
     orientation: 'portrait',
@@ -27,7 +27,7 @@ export default {
     },
     web: {
       output: 'static',
-      favicon: './assets/images/favicon.png',
+      favicon: './assets/images/icon.png',
     },
 
     plugins: [

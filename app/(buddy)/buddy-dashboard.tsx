@@ -245,7 +245,7 @@ export default function BuddyDashboardScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
-      <View style={{ backgroundColor: colors.surface, padding: 20, paddingTop: 20 }}>
+      <View style={{ backgroundColor: colors.surface, padding: 20, paddingTop: 45 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />

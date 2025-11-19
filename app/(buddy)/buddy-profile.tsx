@@ -56,7 +56,7 @@ export default function BuddyProfileScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
-      <View style={{ backgroundColor: colors.surface, paddingTop: 20, paddingBottom: 20 }}>
+      <View style={{ backgroundColor: colors.surface, paddingTop: 45, paddingBottom: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />

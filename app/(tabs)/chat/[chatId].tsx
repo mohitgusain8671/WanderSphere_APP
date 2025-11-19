@@ -56,6 +56,8 @@ export default function ChatScreen() {
   const uploadCancelTokens = useRef<Map<string, () => void>>(new Map());
 
   const chatMessages = messages[chatId as string] || [];
+  // Reverse the date groups so oldest dates appear at top when inverted
+  const reversedChatMessages = [...chatMessages].reverse();
   const chatTypingUsers = (typingUsers.get(chatId as string) || []).filter(
     (userId: string) => userId !== user?._id
   );
@@ -404,39 +406,41 @@ export default function ChatScreen() {
     </View>
   );
 
-  const renderMessageGroup = ({ item: dateGroup }: { item: any }) => (
-    <View>
-      {renderDateSeparator(dateGroup.date)}
-      {dateGroup.messages.map((message: any, index: number) => {
-        const isOwn = message.sender._id === user?._id;
-        const showAvatar =
-          !isOwn &&
-          (index === dateGroup.messages.length - 1 ||
-            dateGroup.messages[index + 1]?.sender._id !== message.sender._id);
+  const renderMessageGroup = ({ item: dateGroup }: { item: any }) => {
+    return (
+      <View>
+        {renderDateSeparator(dateGroup.date)}
+        {dateGroup.messages.map((message: any, index: number) => {
+          const isOwn = message.sender._id === user?._id;
+          const showAvatar =
+            !isOwn &&
+            (index === dateGroup.messages.length - 1 ||
+              dateGroup.messages[index + 1]?.sender._id !== message.sender._id);
 
-        return (
-          <MessageBubble
-            key={`${message._id}-${index}`}
-            message={message}
-            isOwn={isOwn}
-            showAvatar={showAvatar}
-            onLongPress={() => {
-              // Handle message actions (reply, delete, etc.)
-              if (isOwn) {
-                Alert.alert("Message Options", "What would you like to do?", [
-                  { text: "Reply", onPress: () => setReplyTo(message) },
-                  { text: "Delete", style: "destructive" },
-                  { text: "Cancel", style: "cancel" },
-                ]);
-              } else {
-                setReplyTo(message);
-              }
-            }}
-          />
-        );
-      })}
-    </View>
-  );
+          return (
+            <MessageBubble
+              key={`${message._id}-${index}`}
+              message={message}
+              isOwn={isOwn}
+              showAvatar={showAvatar}
+              onLongPress={() => {
+                // Handle message actions (reply, delete, etc.)
+                if (isOwn) {
+                  Alert.alert("Message Options", "What would you like to do?", [
+                    { text: "Reply", onPress: () => setReplyTo(message) },
+                    { text: "Delete", style: "destructive" },
+                    { text: "Cancel", style: "cancel" },
+                  ]);
+                } else {
+                  setReplyTo(message);
+                }
+              }}
+            />
+          );
+        })}
+      </View>
+    );
+  };
 
   const renderTypingIndicator = () => {
     if (chatTypingUsers.length === 0) return null;
@@ -793,7 +797,7 @@ export default function ChatScreen() {
         ) : (
           <FlatList
             ref={flatListRef}
-            data={chatMessages}
+            data={reversedChatMessages}
             renderItem={renderMessageGroup}
             keyExtractor={(item) => item.date}
             showsVerticalScrollIndicator={false}
